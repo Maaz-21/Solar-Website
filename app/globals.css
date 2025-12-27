@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* 1. Global theme tokens (Tailwind v4 @theme) */
+@theme {
+  --color-primary: #1E7F4C;
+  --color-secondary: #F6C445;
+  --color-dark: #0F172A;
+  --color-light: #F9FAFB;
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  Roboto, Helvetica, Arial, sans-serif;
+
+}
+
+/* 3. Color‑scheme defaults using CSS variables */
+:root {
+  --background: #ffffff;
+  --foreground: #0F172A;
+}
+
+/* 4. Base element styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+@layer utilities {
+  .text-primary {
+    color: var(--color-primary);
+  }
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+  .text-secondary {
+    color: var(--color-secondary);
+  }
+  .bg-secondary {
+    background-color: var(--color-secondary);
+  }
+  .text-dark { 
+    color: var(--color-dark); 
+  }
+  .bg-light { 
+    background-color: var(--color-light); 
+  }
+}
+
+@layer components {
+  .section {
+    @apply py-12 px-6 md:px-12 lg:px-24;
+  }
+  .btn-primary {
+    @apply text-white px-6 py-3 rounded-md font-medium transition;
+    background-color: var(--color-primary);
+  }
+
+  .btn-primary:hover {
+    background-color: #166437; /* slightly darker green */
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 rounded-md font-medium transition;
+    background-color: var(--color-secondary);
+    color: var(--color-dark);
+  }
+
+  .btn-secondary:hover {
+    background-color: #f9d15e; /* slightly lighter yellow */
+  }
+ .nav-dropdown {
+    @apply relative inline-flex items-center;
+  }
+
+  .nav-dropdown-trigger {
+    @apply px-1 py-2 cursor-pointer text-sm font-medium select-none text-dark;
+  }
+
+  .nav-dropdown-menu {
+    @apply hidden absolute left-0 top-full min-w-[160px]
+      rounded-xl bg-light shadow-md z-50;
+    /* no margin-top here to avoid a hover gap */
+  }
+
+  .nav-dropdown-menu a {
+    @apply block px-4 py-2 text-sm text-dark no-underline;
+  }
+
+  .nav-dropdown-menu a:hover {
+    @apply bg-slate-200;
+  }
+
+  /* keep menu open while hovering parent OR menu */
+  .nav-dropdown:hover .nav-dropdown-menu {
+    @apply block;
+  }
+}
