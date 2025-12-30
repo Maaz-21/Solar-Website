@@ -39,6 +39,7 @@ export default function AdminLayout({ children }) {
     { name: "Enquiries", href: "/admin/enquiries", icon: MessageSquare },
     { name: "Projects", href: "/admin/projects", icon: FolderKanban },
     { name: "Blog", href: "/admin/blogs", icon: FileText },
+    { name: "Testimonials", href: "/admin/testimonials", icon: FileText },
   ];
 
   return (

@@ -8,6 +8,7 @@ import FAQs from "@/components/Faq";
 import ProjectsPreview from "@/components/Projects";
 import SolutionsSummary from "@/components/Solutions";
 import FinalCTA from "@/components/FinalCTA";
+import Testimonials from "@/components/Testimonials";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <SolutionsSummary />
       <Contact />
       <WhySolar />
+      <Testimonials />
       <ProjectsPreview />
       <Blog />
       <FAQs />

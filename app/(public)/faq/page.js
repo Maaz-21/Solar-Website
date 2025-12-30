@@ -95,10 +95,10 @@ function FAQHero() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-medium mb-6">
             <HelpCircle className="w-4 h-4" /> Knowledge Base
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6">
+          <h1 className="section-heading">
             Frequently Asked Questions
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="section-subtitle">
             Everything you need to know about switching to solar energy.
           </p>
         </motion.div>

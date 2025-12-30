@@ -32,13 +32,13 @@ function AboutHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-primary text-sm font-medium mb-6">
+            <div className="hero-badge">
               <Leaf className="w-4 h-4" /> Since 2018
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6 leading-tight">
+            <h1 className="hero-heading">
               Powering India’s future with <span className="text-primary">clean energy.</span>
             </h1>
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+            <p className="hero-subtitle">
               At Tiranga Solar, we believe that sustainable energy should be accessible, affordable, and hassle-free for every homeowner and business. We are not just installing panels; we are building a greener tomorrow.
             </p>
           </motion.div>
@@ -134,7 +134,7 @@ function ValueCard({ icon: Icon, title, desc }) {
   return (
     <motion.div 
       whileHover={{ y: -5 }}
-      className="p-8 rounded-2xl bg-light border border-gray-100 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300"
+      className="card card-hover-lift p-8 bg-light"
     >
       <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm mb-6 text-primary">
         <Icon className="w-6 h-6" />

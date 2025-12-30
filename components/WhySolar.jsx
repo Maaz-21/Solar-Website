@@ -16,7 +16,7 @@ export default function WhySolar() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mb-14"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-dark mb-4">
+          <h2 className="section-heading">
             Why homeowners choose us for rooftop solar
           </h2>
           <p className="text-gray-700">
@@ -74,7 +74,7 @@ export default function WhySolar() {
         >
           <a
             href="/projects"
-            className="inline-flex items-center text-primary font-medium hover:text-green-700 transition-colors group"
+            className="link-arrow group"
           >
             See our installations <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
@@ -93,7 +93,7 @@ function BenefitCard({ title, desc, icon: Icon, delay }) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -5 }}
-      className="p-6 rounded-xl border border-gray-100 bg-light hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 flex gap-5 items-start"
+      className="card card-hover-lift p-6 flex gap-5 items-start bg-light"
     >
       <div className="shrink-0 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
         <Icon className="w-[26px] h-[26px] text-primary" />

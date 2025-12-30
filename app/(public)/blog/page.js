@@ -87,7 +87,7 @@ function BlogCard({ post, index }) {
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
       whileHover={{ y: -8 }}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 flex flex-col h-full"
+      className="group card card-hover-lift flex flex-col h-full"
     >
       <Link href={`/blog/${post.slug}`} className="block relative h-60 overflow-hidden">
         <Image

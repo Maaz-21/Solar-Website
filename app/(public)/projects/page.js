@@ -104,7 +104,7 @@ function ProjectCard({ project, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.1 }}
-      className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300"
+      className="group card card-hover-lift"
     >
       <div className="relative h-64 overflow-hidden">
         <div className="absolute inset-0 bg-gray-200 animate-pulse" /> {/* Loading placeholder effect */}

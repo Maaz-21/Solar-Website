@@ -54,8 +54,6 @@ export default function ProjectsPage() {
       // Format data for API
       const payload = {
         ...formData,
-        // Ensure images is handled correctly (backend expects array or string depending on model, assuming string or array of strings)
-        // If backend expects array, wrap in array if it's a string
         images: [formData.images] 
       };
 

@@ -11,7 +11,8 @@ export default function Contact() {
     email: "",
     city: "",
     pincode: "",
-    billRange: ""
+    billRange: "",
+    message: ""
   });
   const [status, setStatus] = useState("");
 
@@ -31,7 +32,7 @@ export default function Contact() {
       const data = await res.json();
       if (data.success) {
         setStatus("success");
-        setFormData({ name: "", phone: "", email: "", city: "", pincode: "", billRange: "" });
+        setFormData({ name: "", phone: "", email: "", city: "", pincode: "", billRange: "", message: "" });
       } else {
         setStatus("error");
         alert("Failed to submit enquiry: " + (data.error || "Unknown error"));
@@ -53,10 +54,10 @@ export default function Contact() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-block px-3 py-1 rounded-full bg-green-100 text-primary text-sm font-semibold mb-4">
+          <div className="hero-badge">
             Free Consultation
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-dark mb-6 leading-tight">
+          <h2 className="section-heading">
             Talk to a solar expert — <br/>
             <span className="text-primary">no pressure, no spam</span>
           </h2>
@@ -102,24 +103,10 @@ export default function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100"
+          className="contact-card p-8"
         >
           {status === "success" ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-dark mb-2">Request Received!</h3>
-              <p className="text-gray-600 mb-6">
-                Thank you for your interest. Our solar expert will contact you shortly.
-              </p>
-              <button 
-                onClick={() => setStatus("")}
-                className="text-primary font-semibold hover:underline"
-              >
-                Submit another enquiry
-              </button>
-            </div>
+            <Success onReset={() => setStatus("")} />
           ) : (
             <>
               <h3 className="text-xl font-bold text-dark mb-6">
@@ -132,29 +119,7 @@ export default function Contact() {
                 <Input label="WhatsApp number" required placeholder="+91 98765 43210" name="phone" value={formData.phone} onChange={handleChange} />
 
                 {/* Bill range */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    Monthly electricity bill
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      "Below ₹1500",
-                      "₹1500 – ₹2500",
-                      "₹2500 – ₹4000",
-                      "₹4000 – ₹8000",
-                      "Above ₹8000",
-                    ].map((item) => (
-                      <button
-                        type="button"
-                        key={item}
-                        onClick={() => setFormData({ ...formData, billRange: item })}
-                        className={`px-3 py-2 rounded-lg border text-sm transition-all focus:ring-2 focus:ring-primary/20 ${formData.billRange === item ? 'border-primary bg-green-50 text-primary' : 'border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-green-50'}`}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <BillRange billRange={formData.billRange} setFormData={setFormData} />
 
                 {/* Location */}
                 <div className="grid grid-cols-2 gap-4">
@@ -163,6 +128,21 @@ export default function Contact() {
                 </div>
 
                 <Input label="Email (optional)" placeholder="john@example.com" name="email" value={formData.email} onChange={handleChange} />
+
+                {/* Message */}
+                <div>
+                  <label className="form-label">
+                    Message (optional)
+                  </label>
+                  <textarea
+                    className="form-input"
+                    rows="3"
+                    placeholder="Any specific requirements?"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                  />
+                </div>
 
                 {/* Submit */}
                 <motion.button 
@@ -211,11 +191,60 @@ function Input({ label, required, placeholder, ...props }) {
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
-        className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+        className="form-input"
         required={required}
         placeholder={placeholder}
         {...props}
       />
+    </div>
+  );
+}
+function Success({ onReset }) {
+  return (
+    <div className="text-center py-12">
+      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <CheckCircle2 className="w-8 h-8 text-green-600" />
+      </div>
+
+      <h3 className="text-2xl font-bold text-dark mb-2">Request Received!</h3>
+
+      <p className="text-gray-600 mb-6">
+        Thank you for your interest. Our solar expert will contact you shortly.
+      </p>
+
+      <button onClick={onReset} className="text-primary font-semibold hover:underline">
+        Submit another enquiry
+      </button>
+    </div>
+  );
+}
+function BillRange({ billRange, setFormData }) {
+  const options = [
+    "Below ₹1500",
+    "₹1500 – ₹2500",
+    "₹2500 – ₹4000",
+    "₹4000 – ₹8000",
+    "Above ₹8000"
+  ];
+
+  return (
+    <div>
+      <label className="form-label">Monthly electricity bill</label>
+
+      <div className="flex flex-wrap gap-2">
+        {options.map(item => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setFormData(prev => ({ ...prev, billRange: item }))}
+            className={`select-chip ${
+              billRange === item ? "select-chip-active" : "select-chip-inactive"
+            }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

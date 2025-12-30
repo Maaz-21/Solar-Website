@@ -187,7 +187,7 @@ function ComparisonSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="card p-8">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-green-600">
               <Shield className="w-6 h-6" />
             </div>
@@ -197,7 +197,7 @@ function ComparisonSection() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="card p-8">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600">
               <Zap className="w-6 h-6" />
             </div>
@@ -207,7 +207,7 @@ function ComparisonSection() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="card p-8">
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-600">
               <Info className="w-6 h-6" />
             </div>

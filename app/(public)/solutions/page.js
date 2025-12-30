@@ -29,13 +29,13 @@ function SolutionsHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-primary text-sm font-medium mb-6">
+          <div className="hero-badge">
             <Sun className="w-4 h-4" /> Tailored Energy Solutions
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6 leading-tight">
+          <h1 className="hero-heading">
             Solar solutions for every <span className="text-primary">need.</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="hero-subtitle">
             Whether you want to power your home, run your business efficiently, or ensure 24/7 backup, we have the right solar system for you.
           </p>
         </motion.div>
@@ -122,7 +122,7 @@ function SolutionCard({ solution, index }) {
           {solution.desc}
         </p>
 
-        <div className="bg-light rounded-2xl p-6 border border-gray-100 mb-8">
+        <div className="card bg-light p-6 mb-8">
           <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" /> Key Benefits
           </h3>
@@ -138,7 +138,7 @@ function SolutionCard({ solution, index }) {
 
         <Link 
           href="/contact" 
-          className="inline-flex items-center text-primary font-semibold hover:text-green-700 transition-colors group"
+          className="link-arrow group"
         >
           Get a quote for {solution.title} 
           <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />

@@ -37,7 +37,7 @@ export default function ProjectsPreview() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-bold text-dark mb-8"
+          className="section-heading"
         >
           Recent solar installations
         </motion.h2>
@@ -51,7 +51,7 @@ export default function ProjectsPreview() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -5 }}
-              className="group rounded-xl overflow-hidden border border-gray-100 bg-white hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300"
+              className="group card card-hover-lift"
             >
               <div className="relative h-52 overflow-hidden">
                 <Image 
@@ -78,7 +78,7 @@ export default function ProjectsPreview() {
           transition={{ delay: 0.4 }}
           className="mt-10"
         >
-          <a href="/projects" className="inline-flex items-center text-primary font-medium hover:text-green-700 transition-colors group">
+          <a href="/projects" className="link-arrow group">
             View all installations <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </a>
         </motion.div>

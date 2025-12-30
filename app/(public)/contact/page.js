@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import BillRange from "@/components/Contact";
 
 export default function ContactPage() {
   return (
@@ -40,11 +41,12 @@ function ContactHero() {
 
 function ContactContent() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    name: "",
     phone: "",
-    interest: "Residential Solar (1-10kW)",
+    email: "",
+    city: "",
+    pincode: "",
+    billRange: "",
     message: ""
   });
   const [status, setStatus] = useState("");
@@ -57,33 +59,23 @@ function ContactContent() {
     e.preventDefault();
     setStatus("loading");
     
-    const payload = {
-      name: `${formData.firstName} ${formData.lastName}`,
-      email: formData.email,
-      phone: formData.phone,
-      message: `Interested in: ${formData.interest}. Message: ${formData.message}`
-    };
-
     try {
       const res = await fetch('/api/enquiries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(formData)
       });
       const data = await res.json();
       if (data.success) {
         setStatus("success");
-        setFormData({ firstName: "", lastName: "", email: "", phone: "", interest: "Residential Solar (1-10kW)", message: "" });
-        alert("Message sent successfully!");
+        setFormData({ name: "", phone: "", email: "", city: "", pincode: "", billRange: "", message: "" });
       } else {
         setStatus("error");
-        alert("Failed to send message.");
+        alert("Failed to send message: " + (data.error || "Unknown error"));
       }
     } catch (error) {
       setStatus("error");
       alert("Something went wrong.");
-    } finally {
-      setStatus("");
     }
   };
 
@@ -98,7 +90,7 @@ function ContactContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl font-bold text-dark mb-8">Contact Information</h2>
+            <h2 className="section-heading">Contact Information</h2>
             
             <div className="space-y-8 mb-12">
               <ContactInfoItem 
@@ -118,26 +110,24 @@ function ContactContent() {
               <ContactInfoItem 
                 icon={MapPin} 
                 title="Visit Our Office" 
-                content="123, Solar Tech Park, MIDC Industrial Area," 
-                subContent="Nagpur, Maharashtra - 440016"
+                content="Samsherpur Village, Nandurbar Taluka," 
+                subContent="Nandurbar, Maharashtra - 425412"
               />
             </div>
 
-            {/* Map Placeholder */}
-            <div className="bg-gray-200 rounded-2xl h-64 w-full overflow-hidden relative group">
-              <div className="absolute inset-0 flex items-center justify-center text-gray-500 font-medium bg-gray-100">
-                <MapPin className="w-6 h-6 mr-2" /> Google Map Placeholder
-              </div>
-              {/* In a real app, embed Google Maps iframe here */}
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3720.664676467646!2d79.0882!3d21.1458!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjHCsDA4JzQ0LjkiTiA3OcKwMDUnMTcuNSJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen="" 
+            {/* Map */}
+            <div className="w-full rounded-2xl h-80 overflow-hidden shadow-xl border border-gray-100">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3712.7992729113985!2d74.3308581747265!3d21.476391272254638!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdf0d837241ff99%3A0x2e374b8a7441e198!2sTiranga%20green%20energy%20solutions!5e0!3m2!1sen!2sin!4v1767020002178!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                className="w-full h-full"
+                style={{ border: 0 }}
+                allowFullScreen=""
                 loading="lazy"
-                className="opacity-50 group-hover:opacity-100 transition-opacity duration-300"
-              ></iframe>
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Tiranga Solar Location"
+              />
             </div>
           </motion.div>
 
@@ -146,56 +136,67 @@ function ContactContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 md:p-10 border border-gray-100"
+            className="contact-card p-8 md:p-10"
           >
-            <h2 className="text-2xl font-bold text-dark mb-2">Send us a message</h2>
-            <p className="text-gray-600 mb-8">Fill out the form below and we'll get back to you shortly.</p>
+            {status === "success" ? (
+              <Success onReset={() => setStatus("")} />
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold text-dark mb-2">Send us a message</h2>
+                <p className="text-gray-600 mb-8">Fill out the form below and we'll get back to you shortly.</p>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="grid md:grid-cols-2 gap-6">
-                <InputGroup label="First Name" placeholder="John" name="firstName" value={formData.firstName} onChange={handleChange} />
-                <InputGroup label="Last Name" placeholder="Doe" name="lastName" value={formData.lastName} onChange={handleChange} />
-              </div>
-              
-              <InputGroup label="Email Address" type="email" placeholder="john@example.com" name="email" value={formData.email} onChange={handleChange} />
-              <InputGroup label="Phone Number" type="tel" placeholder="+91 98765 43210" name="phone" value={formData.phone} onChange={handleChange} />
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Interested In</label>
-                <select 
-                  name="interest"
-                  value={formData.interest}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white"
-                >
-                  <option>Residential Solar (1-10kW)</option>
-                  <option>Commercial Solar (10kW+)</option>
-                  <option>Solar Water Heater</option>
-                  <option>Maintenance / Service</option>
-                  <option>Other</option>
-                </select>
-              </div>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  <InputGroup label="Full Name" placeholder="John Doe" name="name" value={formData.name} onChange={handleChange} required />
+                  
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <InputGroup label="Phone Number" type="tel" placeholder="+91 98765 43210" name="phone" value={formData.phone} onChange={handleChange} required />
+                    <InputGroup label="Email Address" type="email" placeholder="john@example.com" name="email" value={formData.email} onChange={handleChange} required />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                <textarea 
-                  rows="4" 
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
-                  placeholder="Tell us about your requirements..."
-                ></textarea>
-              </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <InputGroup label="City" placeholder="Nagpur" name="city" value={formData.city} onChange={handleChange} />
+                    <InputGroup label="Pincode" placeholder="440001" name="pincode" value={formData.pincode} onChange={handleChange} />
+                  </div>
+                  
+                  <div>
+                    <label className="form-label ">Monthly Electricity Bill</label>
+                    <select 
+                      name="billRange"
+                      value={formData.billRange}
+                      onChange={handleChange}
+                      className="form-input w-full"
+                    >
+                      <option value="">Select Bill Range</option>
+                      <option value="Below ₹1500">Below ₹1500</option>
+                      <option value="₹1500 – ₹2500">₹1500 – ₹2500</option>
+                      <option value="₹2500 – ₹4000">₹2500 – ₹4000</option>
+                      <option value="₹4000 – ₹8000">₹4000 – ₹8000</option>
+                      <option value="Above ₹8000">Above ₹8000</option>
+                    </select>
+                  </div>
 
-              <button disabled={status === "loading"} className="w-full btn-primary py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 group disabled:opacity-70">
-                {status === "loading" ? "Sending..." : "Send Message"} <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </button>
+                  <div>
+                    <label className="form-label">Message</label>
+                    <textarea 
+                      rows="4" 
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      className="form-input resize-none"
+                      placeholder="Tell us about your requirements..."
+                    ></textarea>
+                  </div>
 
-              <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-3 h-3 text-green-500" /> Your data is secure. We never spam.
-              </p>
-            </form>
+                  <button disabled={status === "loading"} className="w-full btn-primary py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 flex items-center justify-center gap-2 group disabled:opacity-70 cursor-pointer">
+                    {status === "loading" ? "Sending..." : "Send Message"} <Send className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+
+                  <p className="text-xs text-center text-gray-500 flex items-center justify-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-green-500" /> Your data is secure. We never spam.
+                  </p>
+                </form>
+              </>
+            )}
           </motion.div>
 
         </div>
@@ -224,13 +225,32 @@ function ContactInfoItem({ icon: Icon, title, content, subContent, href }) {
 function InputGroup({ label, type = "text", placeholder, ...props }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <label className="form-label">{label}</label>
       <input 
         type={type} 
-        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+        className="form-input"
         placeholder={placeholder}
         {...props}
       />
+    </div>
+  );
+}
+function Success({ onReset }) {
+  return (
+    <div className="text-center py-12">
+      <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
+        <CheckCircle2 className="w-8 h-8 text-green-600" />
+      </div>
+
+      <h3 className="text-2xl font-bold text-dark mb-2">Message Sent!</h3>
+
+      <p className="text-gray-600 mb-6">
+        Thank you for contacting us. We will get back to you shortly.
+      </p>
+
+      <button onClick={onReset} className="text-primary font-semibold hover:underline">
+        Send another message
+      </button>
     </div>
   );
 }

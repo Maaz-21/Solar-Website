@@ -10,6 +10,13 @@ const EnquirySchema = new mongoose.Schema(
     billRange: String,
     message: String,
     status: { type: String, default: "new" }, // new | contacted | closed
+    replies: [
+      {
+        subject: String,
+        message: String,
+        repliedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true }
 );

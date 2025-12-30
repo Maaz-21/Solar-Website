@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
 const path = require("path");
 
-// Load environment variables from .env file
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const MONGODB_URI = process.env.MONGO_URL;
@@ -13,7 +12,6 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// Define Admin Schema (matching models/Admin.js)
 const AdminSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
@@ -39,7 +37,6 @@ async function createAdmin() {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB");
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       console.log(`Admin with email ${email} already exists.`);
