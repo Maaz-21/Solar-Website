@@ -107,7 +107,7 @@ function ProjectCard({ project, index }) {
       className="group card card-hover-lift"
     >
       <div className="relative h-64 overflow-hidden">
-        <div className="absolute inset-0 bg-gray-200 animate-pulse" /> {/* Loading placeholder effect */}
+        <div className="absolute inset-0" /> {/* Loading placeholder effect */}
         <img 
           src={project.image} 
           alt={project.title}
