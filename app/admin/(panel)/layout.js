@@ -60,7 +60,7 @@ export default function AdminLayout({ children }) {
         `}
       >
         <div className="h-16 flex items-center justify-center border-b">
-          <h1 className="text-xl font-bold text-green-600">Tiranga Solar</h1>
+          <h1 className="text-xl font-bold text-green-600">Solar Owl</h1>
         </div>
 
         <nav className="mt-6 px-4 space-y-2">

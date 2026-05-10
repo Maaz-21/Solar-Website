@@ -15,8 +15,8 @@ const navLinks = [
 
 const dropdownItems = [
   { href: "/calculator", label: "Solar Calculator" },
+  { href: "/solar-design", label: "Solar Design Studio" },
   { href: "/faq", label: "FAQs" },
-  { href: "#", label: "Solar Pro" },
 ];
 
 function DropdownMenu({ items }) {
@@ -87,7 +87,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="logo-link">
             <span className="logo-icon">T</span>
-            Tiranga Solar
+            Solar Owl
           </Link>
 
           {/* Desktop Nav */}

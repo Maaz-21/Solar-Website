@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="col-span-1 md:col-span-1">
           <div className="flex items-center gap-2 mb-4 text-white font-bold text-xl">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">T</div>
-            Tiranga Solar
+            Solar Owl
           </div>
           <p className="text-sm text-gray-400 leading-relaxed mb-6">
             Powering a sustainable future with reliable solar solutions for homes and businesses across India.

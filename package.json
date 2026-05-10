@@ -9,12 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-draw": "^1.5.1",
+    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
     "@next/third-parties": "^16.1.1",
+    "@turf/turf": "^7.3.5",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.562.0",
+    "mapbox-gl": "^3.23.1",
     "mongoose": "^8.20.4",
     "next": "16.1.1",
     "nodemailer": "^7.0.12",

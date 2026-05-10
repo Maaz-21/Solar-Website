@@ -47,7 +47,7 @@ export default function Testimonials() {
             What Our Clients Say
           </h2>
           <p className="section-subtitle max-w-2xl mx-auto">
-            Hear from homeowners and businesses who have switched to solar with Tiranga Solar.
+            Hear from homeowners and businesses who have switched to solar with Solar Owl.
           </p>
         </div>
 

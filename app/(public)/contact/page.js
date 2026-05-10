@@ -126,7 +126,7 @@ function ContactContent() {
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Tiranga Solar Location"
+                title="Solar Owl Location"
               />
             </div>
           </motion.div>

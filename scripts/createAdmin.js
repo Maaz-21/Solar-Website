@@ -5,10 +5,10 @@ const path = require("path");
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-const MONGODB_URI = process.env.MONGO_URL;
+const MONGODB_URI = process.env.MONGO_URI || process.env.MONGO_URL;
 
 if (!MONGODB_URI) {
-  console.error("Error: MONGO_URL is not defined in .env file");
+  console.error("Error: MONGO_URI or MONGO_URL is not defined in .env file");
   process.exit(1);
 }
 
