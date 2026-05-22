@@ -96,29 +96,29 @@ function ContactContent() {
               <ContactInfoItem 
                 icon={Phone} 
                 title="Phone & WhatsApp" 
-                content="+91 98765 43210" 
+                content="+91 9422980148/ 7020660967" 
                 subContent="Mon-Sat, 9am - 7pm"
-                href="tel:+919876543210"
+                href="tel:+919422980148"
               />
               <ContactInfoItem 
                 icon={Mail} 
                 title="Email Us" 
-                content="hello@tirangasolar.com" 
+                content="solarowlcare@gmail.com" 
                 subContent="We reply within 24 hours"
-                href="mailto:hello@tirangasolar.com"
+                href="mailto:solarowlcare@gmail.com"
               />
               <ContactInfoItem 
                 icon={MapPin} 
                 title="Visit Our Office" 
-                content="Samsherpur Village, Nandurbar Taluka," 
-                subContent="Nandurbar, Maharashtra - 425412"
+                content="Kalsekar Incubation Center, Anjuman-I-Islam's Kalsekar Technical Campus, Plot 2 & 3, Sector 16, Khandagaon, Near Thana Naka" 
+                subContent="New Panvel, Panvel, Maharashtra, India - 410206"
               />
             </div>
 
             {/* Map */}
             <div className="w-full rounded-2xl h-80 overflow-hidden shadow-xl border border-gray-100">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3712.7992729113985!2d74.3308581747265!3d21.476391272254638!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdf0d837241ff99%3A0x2e374b8a7441e198!2sTiranga%20green%20energy%20solutions!5e0!3m2!1sen!2sin!4v1767020002178!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3772.442215989444!2d73.10462179999999!3d19.0002258!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7e83a36fbf179%3A0xbbb0905051e8c56e!2sAnjuman-I-Islam&#39;s%20Kalsekar%20Technical%20Campus!5e0!3m2!1sen!2sin!4v1779474678883!5m2!1sen!2sin" 
                 width="100%"
                 height="100%"
                 className="w-full h-full"
@@ -126,7 +126,7 @@ function ContactContent() {
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Solar Owl Location"
+                title="SolarOwl Location"
               />
             </div>
           </motion.div>

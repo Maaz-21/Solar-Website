@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X, Globe } from "lucide-react";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/solutions", label: "Solutions" },
@@ -86,8 +87,23 @@ export default function Navbar() {
       <nav className="nav-container">
           {/* Logo */}
           <Link href="/" className="logo-link">
-            <span className="logo-icon">T</span>
-            Solar Owl
+            <span>
+              <Image
+                  src="/logo.png" 
+                  alt="Team installing solar panels"
+                  width={70} 
+                  height={20}  
+                  priority     // Logos should usually load immediately
+                  />
+            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl leading-none text-gray-900">
+                SolarOwl
+              </span>
+              <span className="text-xs text-gray-500 mt-1">
+                Energy Solutions Pvt. Ltd.
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Nav */}

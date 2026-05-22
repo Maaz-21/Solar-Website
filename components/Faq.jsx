@@ -44,7 +44,7 @@ const faqData = [
       },
       {
         q: "Are government subsidies available?",
-        a: "Yes. Rooftop solar systems are eligible for MNRE subsidies, subject to capacity and location. We assist with the complete subsidy process."
+        a: "Yes. Rooftop solar systems are eligible for MNRE subsidies upto 78000 rupees, subject to capacity and location. We assist with the complete subsidy process."
       },
       {
         q: "How long does it take to recover the cost?",

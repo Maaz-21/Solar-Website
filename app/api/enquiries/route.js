@@ -48,10 +48,10 @@ export async function POST(request) {
         // 2. Auto-reply to User
         if (email) {
           const userHtml = `
-            <h2>Thank you for contacting Solar Owl!</h2>
+            <h2>Thank you for contacting SolarOwl!</h2>
             <p>Hi ${name},</p>
             <p>We have received your enquiry. Our team will review your details and get back to you shortly.</p>
-            <p>Best Regards,<br>Solar Owl Team</p>
+            <p>Best Regards,<br>SolarOwl Team</p>
           `;
           await sendEmail(email, "We received your enquiry", userHtml);
         }

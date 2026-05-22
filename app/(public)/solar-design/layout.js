@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Solar Design Tool | Solar Owl",
+  title: "Solar Design Tool | SolarOwl",
   description:
     "Design your custom solar panel installation. View satellite imagery of your rooftop, auto-generate panel layouts, and calculate energy savings instantly.",
 };

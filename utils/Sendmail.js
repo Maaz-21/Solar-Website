@@ -13,7 +13,7 @@ export async function sendEmail(to, subject, html) {
     });
 
     await transporter.sendMail({
-      from: `"Solar Owl" <${process.env.SMTP_USER}>`,
+      from: `"SolarOwl" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,

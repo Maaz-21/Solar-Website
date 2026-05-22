@@ -39,7 +39,7 @@ function AboutHero() {
               Powering India’s future with <span className="text-primary">clean energy.</span>
             </h1>
             <p className="hero-subtitle">
-              At Solar Owl, we believe that sustainable energy should be accessible, affordable, and hassle-free for every homeowner and business. We are not just installing panels; we are building a greener tomorrow.
+              At SolarOwl, we believe that sustainable energy should be accessible, affordable, and hassle-free for every homeowner and business. We are not just installing panels; we are building a greener tomorrow.
             </p>
           </motion.div>
           
