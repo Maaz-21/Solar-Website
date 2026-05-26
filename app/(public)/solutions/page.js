@@ -2,6 +2,7 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Home, Building2, Battery, CheckCircle2, ArrowRight, Zap, Sun } from "lucide-react";
 import Link from "next/link";
@@ -51,6 +52,7 @@ function SolutionsList() {
       title: "Residential Rooftop Solar",
       desc: "Turn your home's roof into a power plant. Save up to 90% on electricity bills and protect your family from rising energy costs.",
       icon: Home,
+      image: "/rooftop.jpg",
       benefits: [
         "Drastic reduction in monthly electricity bills",
         "Earn from excess power generation (Net Metering)",
@@ -64,6 +66,7 @@ function SolutionsList() {
       title: "Commercial & Industrial Solar",
       desc: "Maximize profitability by cutting operational costs. Ideal for factories, offices, schools, and hospitals with high daytime consumption.",
       icon: Building2,
+      image: "/Commercial.jpg",
       benefits: [
         "Accelerated depreciation benefits (Tax savings)",
         "ROI typically within 3-4 years",
@@ -74,17 +77,32 @@ function SolutionsList() {
     },
     {
       id: "hybrid",
-      title: "Hybrid & Battery Storage",
-      desc: "Energy independence with 24/7 power. Store excess solar energy to use during night or power outages.",
+      title: "Battery Energy Storage Systems (BESS)",
+      desc: "Advanced Battery Energy Storage Systems (BESS) for energy independence, peak shaving, backup power, and smart solar energy utilization.",
       icon: Battery,
+      image: '/battery.avif',
       benefits: [
-        "Power backup during grid outages",
-        "Use solar power even at night",
-        "Reduce reliance on diesel generators",
-        "Smart energy management",
+        "24/7 backup power",
+        "Store excess solar generation",
+        "Reduce diesel generator usage",
+        "Smart energy optimization",
       ],
       color: "bg-purple-50 text-purple-600",
     },
+    {
+      id: "ev-charging",
+      title: "EV Charging Infrastructure",
+      desc: "Future-ready EV charging solutions for homes, businesses, fleets, highways, and public infrastructure.",
+      icon: Zap,
+      image: "/evcharger.jpg",
+      benefits: [
+        "AC Chargers up to 42kW",
+        "DC Fast Chargers up to 240kW",
+        "CCS2 / CHAdeMO / Bharat DC001",
+        "2-in-1 & 3-in-1 Charging Systems",
+      ],
+      color: "bg-green-50 text-green-600",
+  }
   ];
 
   return (
@@ -146,21 +164,18 @@ function SolutionCard({ solution, index }) {
       </div>
 
       {/* Visual Side (Placeholder for now, can be replaced with specific images) */}
-      <div className={!isEven ? "lg:col-start-1" : ""}>
-        <div className={`relative h-[400px] rounded-3xl overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center group`}>
-           {/* In a real app, use <Image /> here with specific images for each solution */}
-           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200 opacity-50" />
-           <solution.icon className="w-32 h-32 text-gray-300 group-hover:scale-110 transition-transform duration-500" />
-           <div className="absolute bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-sm border-t border-white/50">
-             <p className="text-sm font-medium text-center text-gray-500">
-               Visual representation of {solution.title}
-             </p>
-           </div>
-        </div>
+      <div className="relative h-[400px] rounded-3xl overflow-hidden border border-gray-200 group">
+        <Image
+          src={solution.image}
+          alt={solution.title}
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-black/20" />
       </div>
     </motion.div>
-  );
-}
+        );
+      }
 
 function SolutionsCTA() {
   return (

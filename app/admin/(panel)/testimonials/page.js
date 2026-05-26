@@ -10,6 +10,8 @@ export default function TestimonialsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -40,8 +42,46 @@ export default function TestimonialsPage() {
     }
   };
 
+  const uploadImage = async (file) => {
+    setImageError(null);
+    setImageUploading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("folder", "testimonials");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to upload image");
+      }
+
+      setFormData((prev) => ({ ...prev, photo: data.data.url }));
+    } catch (err) {
+      setImageError(err.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadImage(file);
+    e.target.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (imageUploading) {
+      alert("Please wait for the image upload to finish.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const url = editingTestimonial
@@ -87,6 +127,8 @@ export default function TestimonialsPage() {
   };
 
   const openModal = (testimonial = null) => {
+    setImageError(null);
+    setImageUploading(false);
     if (testimonial) {
       setEditingTestimonial(testimonial);
       setFormData({
@@ -114,6 +156,8 @@ export default function TestimonialsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTestimonial(null);
+    setImageError(null);
+    setImageUploading(false);
   };
 
   if (loading) {
@@ -278,15 +322,36 @@ export default function TestimonialsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Photo URL
+                  Photo
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-                  value={formData.photo}
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
-                />
+                <div className="space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all bg-white"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Or paste image URL"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                    value={formData.photo}
+                    onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                  />
+                  {imageUploading && (
+                    <p className="text-xs text-gray-500">Uploading image...</p>
+                  )}
+                  {imageError && (
+                    <p className="text-xs text-red-600">{imageError}</p>
+                  )}
+                  {formData.photo && (
+                    <img
+                      src={formData.photo}
+                      alt="Photo preview"
+                      className="h-20 w-20 rounded-full object-cover border border-gray-200"
+                    />
+                  )}
+                </div>
               </div>
 
               <div>
@@ -343,7 +408,7 @@ export default function TestimonialsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || imageUploading}
                   className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {submitting ? (

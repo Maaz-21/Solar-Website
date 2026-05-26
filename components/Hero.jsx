@@ -25,9 +25,21 @@ const slides = [
 ];
 
 const metrics = [
-  { icon: Zap, label: "500+ Homes", sub: "Solarized" },
-  { icon: ShieldCheck, label: "25 Years", sub: "Warranty" },
-  { icon: CheckCircle2, label: "0%", sub: "Leakage Guarantee" },
+  {
+    icon: Zap,
+    label: "2MW+",
+    sub: "Installations",
+  },
+  {
+    icon: ShieldCheck,
+    label: "Startup India",
+    sub: "DIPP113232 Certified",
+  },
+  {
+    icon: CheckCircle2,
+    label: "Govt Subsidy",
+    sub: "PM Surya Ghar Support",
+  },
 ];
 
 export default function Hero() {

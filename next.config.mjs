@@ -9,6 +9,10 @@ const nextConfig = {
         // port: '',
         // pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
     // optional, but common:
     // formats: ['image/avif', 'image/webp'],

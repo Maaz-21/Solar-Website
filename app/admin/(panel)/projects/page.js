@@ -10,13 +10,15 @@ export default function ProjectsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     location: "",
     type: "Residential", // category
-    images: "", // image URL
+    images: [], // image URL
     capacity: "", // required by backend
     status: "completed"
   });
@@ -41,8 +43,59 @@ export default function ProjectsPage() {
     }
   };
 
+  const uploadImages = async (files) => {
+  setImageError(null);
+  setImageUploading(true);
+
+  try {
+    const uploadedUrls = [];
+
+    for (const file of files) {
+
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("folder", "projects");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to upload image");
+      }
+
+      uploadedUrls.push(data.data.url);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...uploadedUrls],
+    }));
+
+  } catch (err) {
+    setImageError(err.message);
+  } finally {
+    setImageUploading(false);
+  }
+};
+
+  const handleImageSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files) return;
+    await uploadImages(files);
+    e.target.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (imageUploading) {
+      alert("Please wait for the image upload to finish.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const url = editingProject 
@@ -54,7 +107,7 @@ export default function ProjectsPage() {
       // Format data for API
       const payload = {
         ...formData,
-        images: [formData.images] 
+        images: formData.images 
       };
 
       const res = await fetch(url, {
@@ -94,6 +147,8 @@ export default function ProjectsPage() {
   };
 
   const openModal = (project = null) => {
+    setImageError(null);
+    setImageUploading(false);
     if (project) {
       setEditingProject(project);
       setFormData({
@@ -101,7 +156,7 @@ export default function ProjectsPage() {
         description: project.description || "",
         location: project.location || "",
         type: project.type || "Residential",
-        images: Array.isArray(project.images) ? project.images[0] : (project.images || ""),
+        images: Array.isArray(project.images) ? project.images : [],
         capacity: project.capacity || "",
         status: project.status || "completed"
       });
@@ -123,6 +178,8 @@ export default function ProjectsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingProject(null);
+    setImageError(null);
+    setImageUploading(false);
   };
 
   if (loading) return (
@@ -277,15 +334,90 @@ export default function ProjectsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://example.com/image.jpg"
-                  value={formData.images}
-                  onChange={(e) => setFormData({...formData, images: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Project Images
+                </label>
+
+                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-green-500 transition-colors bg-gray-50">
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    id="project-images"
+                  />
+
+                  <label
+                    htmlFor="project-images"
+                    className="cursor-pointer flex flex-col items-center"
+                  >
+
+                    <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                      <Plus className="w-6 h-6 text-green-600" />
+                    </div>
+
+                    <p className="font-medium text-gray-800">
+                      Upload Project Images
+                    </p>
+
+                    <p className="text-sm text-gray-500 mt-1">
+                      PNG, JPG, WEBP up to 10MB
+                    </p>
+
+                  </label>
+                </div>
+
+                {imageUploading && (
+                  <div className="flex items-center gap-2 mt-3 text-sm text-gray-500">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Uploading images...
+                  </div>
+                )}
+
+                {imageError && (
+                  <p className="text-sm text-red-600 mt-2">
+                    {imageError}
+                  </p>
+                )}
+
+                {formData.images.length > 0 && (
+
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+
+                    {formData.images.map((img, index) => (
+
+                      <div
+                        key={index}
+                        className="relative group rounded-xl overflow-hidden border border-gray-200"
+                      >
+
+                        <img
+                          src={img}
+                          alt={`Project ${index}`}
+                          className="h-32 w-full object-cover"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              images: prev.images.filter((_, i) => i !== index),
+                            }));
+                          }}
+                          className="absolute top-2 right-2 bg-black/70 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+                )}
               </div>
 
               <div>
@@ -308,7 +440,7 @@ export default function ProjectsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || imageUploading}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-70 flex items-center gap-2"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}

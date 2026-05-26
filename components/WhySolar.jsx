@@ -109,3 +109,4 @@ function BenefitCard({ title, desc, icon: Icon, delay }) {
     </motion.div>
   );
 }
+

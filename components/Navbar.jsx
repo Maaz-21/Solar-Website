@@ -24,7 +24,7 @@ function DropdownMenu({ items }) {
   return (
     <div className="nav-dropdown">
       <button className="nav-dropdown-trigger">
-        More <ChevronDown className="w-4 h-4" />
+        More <ChevronDown className="w-4 h-4 cursor-pointer" />
       </button>
       <div className="nav-dropdown-menu">
         {items.map(({ href, label }) => (
@@ -37,7 +37,7 @@ function DropdownMenu({ items }) {
 function LanguageSelector({ currentLang, onChange }) {
   return (
     <div className="nav-dropdown">
-      <button className="nav-dropdown-trigger">
+      <button className="nav-dropdown-trigger cursor-pointer">
         <Globe className="w-4 h-4" />
         {currentLang === "en" ? "English" : "Hindi"}
         <ChevronDown className="w-4 h-4" />

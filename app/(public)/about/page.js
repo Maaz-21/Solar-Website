@@ -39,7 +39,8 @@ function AboutHero() {
               Powering India’s future with <span className="text-primary">clean energy.</span>
             </h1>
             <p className="hero-subtitle">
-              At SolarOwl, we believe that sustainable energy should be accessible, affordable, and hassle-free for every homeowner and business. We are not just installing panels; we are building a greener tomorrow.
+              SolarOwl Energy Solutions Pvt. Ltd. is as a recognized clean energy company delivering solar PV systems, EV charging infrastructure, and battery energy storage solutions across India.
+              From residential rooftop systems to commercial-scale energy infrastructure, we help homes, and institutions transition toward reliable and sustainable energy.           
             </p>
           </motion.div>
           
@@ -65,11 +66,27 @@ function AboutHero() {
 
 function StatsSection() {
   const stats = [
-    { label: "Years of Experience", value: "6+", icon: Clock },
-    { label: "Happy Customers", value: "500+", icon: Users },
-    { label: "Installations", value: "2MW+", icon: Sun },
-    { label: "Service Guarantee", value: "25 Yrs", icon: Award },
-  ];
+  {
+    value: "6+",
+    label: "Years in Clean Energy",
+    icon: Award,
+  },
+  {
+    value: "2MW+",
+    label: "Solar Installations",
+    icon: CheckCircle2,
+  },
+  {
+    value: "25 Yrs",
+    label: "Performance Support",
+    icon: Clock,
+  },
+  {
+    value: "Startup India",
+    label: "DIPP113232",
+    icon: ShieldCheck,
+  },
+];
 
   return (
     <section className="py-12 bg-primary text-white">

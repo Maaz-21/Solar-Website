@@ -176,7 +176,7 @@ body {
   }
   
   .nav-dropdown-menu a:hover, .dropdown-item-btn:hover { 
-    @apply bg-slate-100 text-primary; /* Standardized hover color */
+    @apply bg-slate-100 text-primary ; /* Standardized hover color */
   }
   
   .nav-dropdown:hover .nav-dropdown-menu { 
@@ -189,7 +189,7 @@ body {
   }
   
   .mobile-cta { 
-    @apply py-2 text-primary font-semibold transition-colors; 
+    @apply py-2 text-primary font-semibold transition-colors cursor-pointer; 
   }
   
   /* HERO SECTION */

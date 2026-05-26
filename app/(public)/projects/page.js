@@ -64,7 +64,9 @@ function ProjectsGrid() {
             location: p.location,
             capacity: p.capacity,
             type: p.type,
-            image: (p.images && p.images.length > 0) ? p.images[0] : "https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop",
+            images: p.images && p.images.length > 0 ? p.images : [
+                    "https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop"
+                    ],            
             desc: p.description
           }));
           setProjects(formattedProjects);
@@ -98,6 +100,25 @@ function ProjectsGrid() {
 }
 
 function ProjectCard({ project, index }) {
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+
+    if (!project.images || project.images.length <= 1)
+      return;
+
+    const interval = setInterval(() => {
+      setCurrentImage((prev) =>
+        prev === project.images.length - 1
+          ? 0
+          : prev + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+
+  }, [project.images]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -108,11 +129,26 @@ function ProjectCard({ project, index }) {
     >
       <div className="relative h-64 overflow-hidden">
         <div className="absolute inset-0" /> {/* Loading placeholder effect */}
-        <img 
-          src={project.image} 
+        <img
+          src={project.images[currentImage]}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
+        {project.images.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          {project.images.map((_, i) => (
+            <div
+              key={i}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentImage === i
+                  ? "w-6 bg-white"
+                  : "w-2 bg-white/50"
+              }`}
+            />
+          ))}
+
+        </div>
+        )}
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-dark shadow-sm">
           {project.type}
         </div>
@@ -138,7 +174,7 @@ function ProjectCard({ project, index }) {
         </p>
 
         <Link 
-          href="/contact" 
+          href={`/projects/${project.id}`} 
           className="inline-flex items-center text-sm font-semibold text-dark hover:text-primary transition-colors"
         >
           View Details <ArrowRight className="ml-2 w-4 h-4" />
@@ -167,7 +203,7 @@ function ProjectsCTA() {
             href="/products" 
             className="px-8 py-3 rounded-full border border-gray-200 font-semibold text-dark hover:bg-gray-50 transition-colors"
           >
-            View Solar Plans
+            View Solar Products
           </Link>
         </div>
       </div>

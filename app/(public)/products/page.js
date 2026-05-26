@@ -3,19 +3,37 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
-import { Check, Zap, Shield, Info, ArrowRight } from "lucide-react";
+import {
+  Sun,
+  Battery,
+  Zap,
+  Cpu,
+  ShieldCheck,
+  Wifi,
+  Car,
+  Building2,
+  Factory,
+  ArrowRight,
+  CheckCircle2,
+} from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function ProductsPage() {
   return (
     <>
       <Navbar />
+
       <main>
         <ProductsHero />
-        <PricingPackages />
-        <ComparisonSection />
+        <SolarProducts />
+        <EVChargers />
+        <EVFeatures />
+        <BESSSection />
+        <ApplicationsSection />
         <ProductsCTA />
       </main>
+
       <Footer />
     </>
   );
@@ -23,199 +41,343 @@ export default function ProductsPage() {
 
 function ProductsHero() {
   return (
-    <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 bg-gradient-to-b from-blue-50/50 to-white overflow-hidden">
+    <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-24 bg-gradient-to-b from-green-50/40 to-white overflow-hidden">
+
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 text-center">
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-6">
-            <Zap className="w-4 h-4" /> Transparent Pricing
+
+          <div className="hero-badge">
+            <Zap className="w-4 h-4" />
+            Integrated Clean Energy Products
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-dark mb-6 leading-tight">
-            Simple, transparent <span className="text-blue-600">solar plans.</span>
+
+          <h1 className="hero-heading">
+            Solar, EV & Battery
+            <span className="text-primary"> energy solutions.</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Choose the right system size for your energy needs. All our packages include premium components, professional installation, and comprehensive warranties.
+
+          <p className="hero-subtitle max-w-3xl mx-auto">
+            Explore advanced solar PV systems, EV charging infrastructure,
+            and Battery Energy Storage Systems engineered for homes,
+            businesses, industries, and public infrastructure.
           </p>
+
         </motion.div>
       </div>
     </section>
   );
 }
 
-function PricingPackages() {
-  const packages = [
+function SolarProducts() {
+  const products = [
     {
-      size: "3kW",
-      idealFor: "2-3 BHK Home",
-      generation: "~12-15 units/day",
-      price: "₹1.8L - ₹2.2L",
-      subsidy: "Eligible for Govt Subsidy",
-      features: [
-        "High-efficiency Mono PERC Panels",
-        "On-Grid Inverter (5-year warranty)",
-        "Galvanized Structure (Wind resistant)",
-        "Net Metering Assistance",
-      ],
-      popular: false,
+      icon: Sun,
+      title: "Solar Panels",
+      desc: "High-efficiency Mono PERC & Bifacial solar panels for residential and commercial applications.",
     },
     {
-      size: "5kW",
-      idealFor: "Large Home / Villa",
-      generation: "~20-25 units/day",
-      price: "₹2.8L - ₹3.2L",
-      subsidy: "Eligible for Govt Subsidy",
-      features: [
-        "High-efficiency Mono PERC Panels",
-        "On-Grid Inverter (WiFi enabled)",
-        "Elevated Structure options",
-        "Priority Installation Support",
-      ],
-      popular: true,
+      icon: Cpu,
+      title: "Solar Inverters",
+      desc: "Smart on-grid, hybrid, and industrial inverters with remote monitoring support.",
     },
     {
-      size: "8kW",
-      idealFor: "Large Villa / Office",
-      generation: "~32-40 units/day",
-      price: "₹4.2L - ₹4.8L",
-      subsidy: "Partial Subsidy Eligibility",
-      features: [
-        "Premium Bifacial Panels",
-        "Advanced String Inverter",
-        "Remote Monitoring App",
-        "3 Free Maintenance Visits",
-      ],
-      popular: false,
+      icon: Battery,
+      title: "Solar Batteries",
+      desc: "Reliable lithium and tubular battery systems for backup and energy optimization.",
     },
     {
-      size: "10kW",
-      idealFor: "Commercial / Joint Family",
-      generation: "~40-50 units/day",
-      price: "₹5.0L - ₹5.8L",
-      subsidy: "Commercial Depreciation Benefit",
-      features: [
-        "Premium Bifacial Panels",
-        "Three-Phase Inverter",
-        "Heavy-duty Structure",
-        "Dedicated Project Manager",
-      ],
-      popular: false,
+      icon: Zap,
+      title: "Solar PV Systems",
+      desc: "Complete rooftop and ground-mounted solar power systems from kilowatts to megawatts.",
     },
   ];
 
   return (
     <section className="section bg-white">
-      <div className="max-w-7xl mx-auto px-6">
+
+      <div className="max-w-7xl mx-auto">
+
+        <div className="text-center mb-16">
+          <h2 className="section-heading">
+            Solar Energy Products
+          </h2>
+
+          <p className="section-subtitle max-w-2xl mx-auto">
+            Reliable, scalable, and future-ready solar infrastructure solutions.
+          </p>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {packages.map((pkg, index) => (
-            <PackageCard key={pkg.size} pkg={pkg} index={index} />
+
+          {products.map((product, index) => (
+            <motion.div
+              key={product.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="card p-8 text-center"
+            >
+
+              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-6 text-primary">
+                <product.icon className="w-7 h-7" />
+              </div>
+
+              <h3 className="text-xl font-bold text-dark mb-3">
+                {product.title}
+              </h3>
+
+              <p className="text-gray-600 text-sm leading-relaxed">
+                {product.desc}
+              </p>
+
+            </motion.div>
           ))}
         </div>
-        <p className="text-center text-sm text-gray-500 mt-12">
-          * Prices are indicative and may vary based on roof type, structure height, and component brands. Subsidy rules subject to government policy.
-        </p>
       </div>
     </section>
   );
 }
 
-function PackageCard({ pkg, index }) {
+function EVChargers() {
+
+  const chargers = [
+    {
+      title: "AC Type-2 Chargers",
+      power: "Up to 42kW",
+    },
+    {
+      title: "Bharat AC001",
+      power: "Up to 10kW",
+    },
+    {
+      title: "CCS2 Fast Chargers",
+      power: "Up to 240kW",
+    },
+    {
+      title: "3-in-1 Chargers",
+      power: "CCS2 + CHAdeMO + AC",
+    },
+  ];
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className={`relative flex flex-col p-6 rounded-2xl border ${
-        pkg.popular ? "border-blue-500 shadow-xl shadow-blue-100 scale-105 z-10 bg-white" : "border-gray-200 bg-gray-50/50"
-      }`}
-    >
-      {pkg.popular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-          Most Popular
+    <section className="section bg-gray-50">
+
+      <div className="max-w-7xl mx-auto">
+
+        <div className="text-center mb-16">
+          <h2 className="section-heading">
+            EV Charging Infrastructure
+          </h2>
+
+          <p className="section-subtitle max-w-2xl mx-auto">
+            Smart EV charging systems for homes, fleets, highways,
+            commercial buildings, and public infrastructure.
+          </p>
         </div>
-      )}
-      
-      <div className="mb-6">
-        <h3 className="text-2xl font-bold text-dark mb-1">{pkg.size} System</h3>
-        <p className="text-sm text-gray-500 font-medium">{pkg.idealFor}</p>
-      </div>
 
-      <div className="mb-6 pb-6 border-b border-gray-200">
-        <div className="text-3xl font-bold text-dark mb-1">{pkg.price}</div>
-        <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-          <Check className="w-3 h-3" /> {pkg.subsidy}
-        </p>
-      </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
 
-      <div className="space-y-4 mb-8 flex-grow">
-        <div className="flex items-center gap-3 text-sm text-gray-700">
-          <Zap className="w-4 h-4 text-yellow-500 shrink-0" />
-          <span>Generates <strong>{pkg.generation}</strong></span>
+          {chargers.map((charger, index) => (
+            <motion.div
+              key={charger.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="card p-8"
+            >
+
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 text-blue-600">
+                <Car className="w-7 h-7" />
+              </div>
+
+              <h3 className="text-xl font-bold text-dark mb-3">
+                {charger.title}
+              </h3>
+
+              <p className="text-primary font-semibold mb-4">
+                {charger.power}
+              </p>
+
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Smart Charging Support
+              </div>
+
+            </motion.div>
+          ))}
+
         </div>
-        {pkg.features.map((feature, i) => (
-          <div key={i} className="flex items-start gap-3 text-sm text-gray-600">
-            <Check className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-            <span>{feature}</span>
-          </div>
-        ))}
       </div>
-
-      <Link 
-        href="/contact" 
-        className={`w-full py-3 rounded-xl font-semibold text-center transition-all ${
-          pkg.popular 
-            ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200" 
-            : "bg-white border border-gray-200 text-dark hover:border-blue-500 hover:text-blue-600"
-        }`}
-      >
-        Get Quote
-      </Link>
-    </motion.div>
+    </section>
   );
 }
 
-function ComparisonSection() {
+function EVFeatures() {
+
+  const features = [
+    "OCPP 1.6J Support",
+    "RFID Authentication",
+    "Smart Charging",
+    "IP54 Weather Protection",
+    "Mobile Connectivity",
+    "Remote Monitoring",
+  ];
+
   return (
-    <section className="section bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6">
+    <section className="section bg-white">
+
+      <div className="max-w-5xl mx-auto">
+
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-dark mb-4">What's included in every plan?</h2>
-          <p className="text-gray-600">We don't cut corners. Every installation comes with our quality promise.</p>
+          <h2 className="section-heading">
+            Smart EV Features
+          </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="card p-8">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-green-600">
-              <Shield className="w-6 h-6" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          {features.map((feature, index) => (
+            <div
+              key={feature}
+              className="card p-6 flex items-center gap-4"
+            >
+
+              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-primary">
+                <Wifi className="w-5 h-5" />
+              </div>
+
+              <span className="font-medium text-dark">
+                {feature}
+              </span>
+
             </div>
-            <h3 className="text-xl font-bold text-dark mb-3">25-Year Warranty</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Performance warranty on solar panels ensuring they generate at least 80% power even after 25 years.
-            </p>
+          ))}
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BESSSection() {
+  return (
+    <section className="section bg-gray-50">
+
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+
+        <div>
+
+          <div className="hero-badge mb-6">
+            <Battery className="w-4 h-4" />
+            Battery Energy Storage Systems
           </div>
 
-          <div className="card p-8">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600">
-              <Zap className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-dark mb-3">Top-Tier Inverters</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              We use only rated inverters (Growatt, Solis, Enphase) with 98%+ efficiency and smart monitoring capabilities.
-            </p>
-          </div>
+          <h2 className="section-heading">
+            Intelligent energy storage for modern infrastructure.
+          </h2>
 
-          <div className="card p-8">
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-600">
-              <Info className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-dark mb-3">Lifetime Support</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              Our relationship doesn't end at installation. We provide cleaning guides, maintenance checks, and support.
-            </p>
+          <p className="section-subtitle">
+            Store excess solar energy, reduce grid dependency,
+            enable backup power, and optimize energy utilization
+            with advanced Battery Energy Storage Systems (BESS).
+          </p>
+
+          <div className="space-y-4">
+
+            {[
+              "24/7 Backup Power",
+              "Peak Load Management",
+              "Diesel Generator Reduction",
+              "Smart Energy Optimization",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-3"
+              >
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                <span>{item}</span>
+              </div>
+            ))}
+
           </div>
+        </div>
+
+        <div className="relative h-[420px] rounded-3xl overflow-hidden">
+          <Image
+            src="/battery.avif"
+            alt="Battery Energy Storage Systems"
+            fill
+            className="object-cover"
+          />
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+function ApplicationsSection() {
+
+  const applications = [
+    {
+      icon: Building2,
+      title: "Residential",
+    },
+    {
+      icon: Factory,
+      title: "Industrial",
+    },
+    {
+      icon: Car,
+      title: "Fleet Charging",
+    },
+    {
+      icon: Zap,
+      title: "Highway Charging",
+    },
+  ];
+
+  return (
+    <section className="section bg-white">
+
+      <div className="max-w-6xl mx-auto">
+
+        <div className="text-center mb-16">
+          <h2 className="section-heading">
+            Applications
+          </h2>
+
+          <p className="section-subtitle">
+            Clean energy solutions across multiple sectors.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          {applications.map((app) => (
+            <div
+              key={app.title}
+              className="card p-8 text-center"
+            >
+
+              <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-6 text-primary">
+                <app.icon className="w-7 h-7" />
+              </div>
+
+              <h3 className="text-lg font-bold">
+                {app.title}
+              </h3>
+
+            </div>
+          ))}
+
         </div>
       </div>
     </section>
@@ -224,19 +386,27 @@ function ComparisonSection() {
 
 function ProductsCTA() {
   return (
-    <section className="py-20 bg-dark text-white overflow-hidden relative">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1509391366360-2e959784a276?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center opacity-10"></div>
-      <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-        <h2 className="text-3xl md:text-4xl font-bold mb-6">Custom requirements?</h2>
-        <p className="text-gray-300 mb-8 text-lg max-w-2xl mx-auto">
-          Need a larger commercial setup or a specific off-grid solution? We design custom solar plants tailored to your consumption patterns.
+    <section className="py-20 bg-primary text-white">
+
+      <div className="max-w-4xl mx-auto px-6 text-center">
+
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          Need a custom clean energy solution?
+        </h2>
+
+        <p className="text-green-50 mb-8 text-lg max-w-2xl mx-auto">
+          Our engineers can design solar, EV charging,
+          and energy storage infrastructure tailored to your needs.
         </p>
-        <Link 
-          href="/contact" 
-          className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-bold hover:bg-green-600 transition-all duration-300"
+
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-full font-bold hover:bg-gray-100 transition-all duration-300"
         >
-          Request Custom Proposal <ArrowRight className="w-4 h-4" />
+          Request Custom Proposal
+          <ArrowRight className="w-4 h-4" />
         </Link>
+
       </div>
     </section>
   );

@@ -10,6 +10,8 @@ export default function BlogsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -41,8 +43,46 @@ export default function BlogsPage() {
     }
   };
 
+  const uploadImage = async (file) => {
+    setImageError(null);
+    setImageUploading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+      uploadData.append("folder", "blogs");
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to upload image");
+      }
+
+      setFormData((prev) => ({ ...prev, image: data.data.url }));
+    } catch (err) {
+      setImageError(err.message);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadImage(file);
+    e.target.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (imageUploading) {
+      alert("Please wait for the image upload to finish.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const url = editingBlog 
@@ -88,6 +128,8 @@ export default function BlogsPage() {
   };
 
   const openModal = (blog = null) => {
+    setImageError(null);
+    setImageUploading(false);
     if (blog) {
       setEditingBlog(blog);
       setFormData({
@@ -117,6 +159,8 @@ export default function BlogsPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingBlog(null);
+    setImageError(null);
+    setImageUploading(false);
   };
 
   // Auto-generate slug from title
@@ -295,14 +339,36 @@ export default function BlogsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
-                  <input
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none"
-                  />
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none bg-white"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Or paste image URL"
+                      value={formData.image}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none"
+                    />
+                    {imageUploading && (
+                      <p className="text-xs text-gray-500">Uploading image...</p>
+                    )}
+                    {imageError && (
+                      <p className="text-xs text-red-600">{imageError}</p>
+                    )}
+                    {formData.image && (
+                      <img
+                        src={formData.image}
+                        alt="Cover preview"
+                        className="h-24 w-full rounded-lg object-cover border border-gray-200"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -340,7 +406,7 @@ export default function BlogsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || imageUploading}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-70 flex items-center gap-2"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
