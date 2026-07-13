@@ -1,13 +1,9 @@
 export const metadata = {
-  title: "Solar Design Tool | SolarOwl",
+  title: "Solar Design Studio | SolarOwl — Design Your Solar System",
   description:
-    "Design your custom solar panel installation. View satellite imagery of your rooftop, auto-generate panel layouts, and calculate energy savings instantly.",
+    "Design your custom solar panel installation with our professional 9-step wizard. View satellite imagery, outline your roof, calculate energy savings, and generate a complete solar proposal.",
 };
 
 export default function SolarDesignLayout({ children }) {
-  return (
-    <div className="solar-design-root">
-      {children}
-    </div>
-  );
+  return children;
 }

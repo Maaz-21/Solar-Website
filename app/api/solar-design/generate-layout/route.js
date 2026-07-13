@@ -13,6 +13,8 @@ export async function POST(request) {
       panelSpecs = DEFAULT_PANEL,
       setbackDistance = SYSTEM_DEFAULTS.setbackDistanceM,
       panelOrientation, // "portrait", "landscape", or undefined (auto)
+      targetSystemSizeKW,
+      analysisOnly = false,
     } = body;
 
     if (!roofPolygon?.coordinates?.length) {
@@ -36,12 +38,22 @@ export async function POST(request) {
       );
     }
 
+    // Measurement review deliberately happens before panel placement.
+    if (analysisOnly) {
+      return NextResponse.json({ success: true, roofMetrics });
+    }
+
+    const maxPanelCount = Number.isFinite(Number(targetSystemSizeKW)) && Number(targetSystemSizeKW) > 0
+      ? Math.max(1, Math.floor((Number(targetSystemSizeKW) * 1000) / panelSpecs.wattage))
+      : null;
+
     // 2. Generate panel layout
     const layoutParams = {
       usableGeometry: roofMetrics.usableGeometry,
       orientation: roofMetrics.orientation,
       panelSpecs,
       roofAreaM2: roofMetrics.totalArea,
+      maxPanelCount,
     };
 
     let layout;
