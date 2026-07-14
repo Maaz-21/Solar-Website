@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Worldwide address search — Mapbox Geocoding v6 (autocomplete) + GPS with
+ * reverse geocoding, recent searches in localStorage.
+ */
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, MapPin, Loader2, X, Clock3 } from "lucide-react";
 
@@ -19,13 +24,28 @@ function saveRecentSearch(item) {
   try {
     const recent = getRecentSearches().filter((r) => r.id !== item.id);
     recent.unshift(item);
-    localStorage.setItem(
-      RECENT_STORAGE_KEY,
-      JSON.stringify(recent.slice(0, MAX_RECENT))
-    );
+    localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
   } catch {
-    // localStorage not available
+    /* localStorage unavailable */
   }
+}
+
+/** Normalize a v6 feature into the app's location shape. */
+function parseFeature(feature) {
+  const props = feature.properties ?? {};
+  const ctx = props.context ?? {};
+  const coords = props.coordinates
+    ? [props.coordinates.longitude, props.coordinates.latitude]
+    : feature.geometry?.coordinates;
+  return {
+    id: feature.id ?? props.mapbox_id ?? `${coords?.[0]},${coords?.[1]}`,
+    address: props.full_address ?? props.name ?? "",
+    coordinates: coords,
+    city: ctx.place?.name ?? ctx.locality?.name ?? "",
+    state: ctx.region?.name ?? "",
+    country: ctx.country?.name ?? "",
+    pincode: ctx.postcode?.name ?? "",
+  };
 }
 
 export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
@@ -40,12 +60,10 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
   const wrapperRef = useRef(null);
   const debounceRef = useRef(null);
 
-  // Load recent searches from localStorage
   useEffect(() => {
     setRecentSearches(getRecentSearches());
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -57,42 +75,29 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Geocode search using Mapbox — worldwide with India proximity bias
   const searchAddress = useCallback(async (text) => {
     if (!text || text.length < 3 || !MAPBOX_TOKEN) {
       setSuggestions([]);
       return;
     }
-
     setIsSearching(true);
     try {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          text
-        )}.json?access_token=${MAPBOX_TOKEN}&proximity=ip&types=address,place,locality,neighborhood,postcode&limit=6`
-      );
+      const url =
+        `https://api.mapbox.com/search/geocode/v6/forward?q=${encodeURIComponent(text)}` +
+        `&access_token=${MAPBOX_TOKEN}&autocomplete=true&limit=6` +
+        `&types=address,street,place,locality,neighborhood,postcode&proximity=ip`;
+      const res = await fetch(url);
       const data = await res.json();
-
       if (data.features) {
         setSuggestions(
-          data.features.map((f) => {
-            const parts = f.place_name.split(", ");
-            return {
-              id: f.id,
-              name: f.place_name,
-              primary: parts[0] || f.text,
-              secondary: parts.slice(1).join(", "),
-              center: f.center,
-              city:
-                f.context?.find((c) => c.id.startsWith("place"))?.text || "",
-              state:
-                f.context?.find((c) => c.id.startsWith("region"))?.text || "",
-              pincode:
-                f.context?.find((c) => c.id.startsWith("postcode"))?.text || "",
-              country:
-                f.context?.find((c) => c.id.startsWith("country"))?.text || "",
-            };
-          })
+          data.features
+            .map(parseFeature)
+            .filter((f) => f.coordinates)
+            .map((f) => ({
+              ...f,
+              primary: f.address.split(",")[0],
+              secondary: f.address.split(",").slice(1).join(",").trim(),
+            }))
         );
         setIsOpen(true);
         setShowRecent(false);
@@ -104,7 +109,6 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
     }
   }, []);
 
-  // Debounced search
   const handleInputChange = (e) => {
     const val = e.target.value;
     setQuery(val);
@@ -118,112 +122,65 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
   };
 
   const handleFocus = () => {
-    if (suggestions.length > 0) {
-      setIsOpen(true);
-    } else if (!query && recentSearches.length > 0) {
-      setShowRecent(true);
-    }
+    if (suggestions.length > 0) setIsOpen(true);
+    else if (!query && recentSearches.length > 0) setShowRecent(true);
   };
 
-  // Select a suggestion
-  const handleSelect = (suggestion) => {
-    setQuery(suggestion.name);
+  const emit = (loc) => {
+    saveRecentSearch(loc);
+    setRecentSearches(getRecentSearches());
+    onLocationSelect({
+      address: loc.address,
+      coordinates: loc.coordinates,
+      city: loc.city ?? "",
+      state: loc.state ?? "",
+      country: loc.country ?? "",
+      pincode: loc.pincode ?? "",
+    });
+  };
+
+  const handleSelect = (s) => {
+    setQuery(s.address);
     setIsOpen(false);
     setShowRecent(false);
-
-    const loc = {
-      address: suggestion.name,
-      coordinates: suggestion.center,
-      city: suggestion.city,
-      state: suggestion.state,
-      pincode: suggestion.pincode,
-    };
-
-    saveRecentSearch({
-      id: suggestion.id,
-      name: suggestion.name,
-      center: suggestion.center,
-      city: suggestion.city,
-      state: suggestion.state,
-      pincode: suggestion.pincode,
-    });
-    setRecentSearches(getRecentSearches());
-    onLocationSelect(loc);
+    emit(s);
   };
 
-  // Select from recent
-  const handleRecentSelect = (recent) => {
-    setQuery(recent.name);
-    setShowRecent(false);
-    onLocationSelect({
-      address: recent.name,
-      coordinates: recent.center,
-      city: recent.city || "",
-      state: recent.state || "",
-      pincode: recent.pincode || "",
-    });
-  };
-
-  // Use current GPS location
   const handleGPS = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      alert("Geolocation is not supported by your browser.");
       return;
     }
-
     setIsGeolocating(true);
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        let loc = {
+          id: `gps-${longitude.toFixed(5)},${latitude.toFixed(5)}`,
+          address: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`,
+          coordinates: [longitude, latitude],
+          city: "", state: "", country: "", pincode: "",
+        };
         try {
-          const res = await fetch(
-            `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_TOKEN}&limit=1`
-          );
+          const url =
+            `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${longitude}` +
+            `&latitude=${latitude}&access_token=${MAPBOX_TOKEN}&limit=1`;
+          const res = await fetch(url);
           const data = await res.json();
-          const feature = data.features?.[0];
-
-          const loc = {
-            address: feature?.place_name || `${latitude}, ${longitude}`,
-            coordinates: [longitude, latitude],
-            city:
-              feature?.context?.find((c) => c.id.startsWith("place"))?.text ||
-              "",
-            state:
-              feature?.context?.find((c) => c.id.startsWith("region"))?.text ||
-              "",
-            pincode:
-              feature?.context?.find((c) => c.id.startsWith("postcode"))
-                ?.text || "",
-          };
-
-          setQuery(loc.address);
-          saveRecentSearch({
-            id: `gps-${Date.now()}`,
-            name: loc.address,
-            center: loc.coordinates,
-            city: loc.city,
-            state: loc.state,
-            pincode: loc.pincode,
-          });
-          setRecentSearches(getRecentSearches());
-          onLocationSelect(loc);
-        } catch (err) {
-          console.error("Reverse geocoding error:", err);
-          onLocationSelect({
-            address: `${latitude}, ${longitude}`,
-            coordinates: [longitude, latitude],
-            city: "",
-            state: "",
-            pincode: "",
-          });
-        } finally {
-          setIsGeolocating(false);
+          if (data.features?.[0]) {
+            const parsed = parseFeature(data.features[0]);
+            loc = { ...parsed, id: loc.id, coordinates: [longitude, latitude] };
+          }
+        } catch {
+          /* keep raw coordinates */
         }
-      },
-      (err) => {
-        console.error("GPS error:", err);
-        alert("Unable to get your location. Please allow location access.");
+        setQuery(loc.address);
+        emit(loc);
         setIsGeolocating(false);
+      },
+      () => {
+        setIsGeolocating(false);
+        alert("Unable to get your location. Please allow location access.");
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -251,10 +208,11 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
           onFocus={handleFocus}
           disabled={isDisabled}
           id="address-search-input"
+          autoComplete="off"
         />
         {isSearching && <Loader2 size={16} className="sd-search-spinner" />}
         {query && (
-          <button className="sd-search-clear" onClick={clearInput}>
+          <button className="sd-search-clear" onClick={clearInput} aria-label="Clear search">
             <X size={14} />
           </button>
         )}
@@ -264,30 +222,20 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
           disabled={isGeolocating || isDisabled}
           title="Use current location"
         >
-          {isGeolocating ? (
-            <Loader2 size={16} className="sd-search-spinner" />
-          ) : (
-            <MapPin size={16} />
-          )}
+          {isGeolocating ? <Loader2 size={16} className="sd-search-spinner" /> : <MapPin size={16} />}
         </button>
       </div>
 
-      {/* Suggestions Dropdown */}
       {isOpen && suggestions.length > 0 && (
         <ul className="sd-search-dropdown">
           <li className="sd-search-dropdown-section">Suggestions</li>
           {suggestions.map((s) => (
             <li key={s.id}>
-              <button
-                className="sd-search-result"
-                onClick={() => handleSelect(s)}
-              >
+              <button className="sd-search-result" onClick={() => handleSelect(s)}>
                 <MapPin size={14} className="sd-result-icon" />
                 <span className="sd-result-text">
                   <span className="sd-result-primary">{s.primary}</span>
-                  {s.secondary && (
-                    <span className="sd-result-secondary">{s.secondary}</span>
-                  )}
+                  {s.secondary && <span className="sd-result-secondary">{s.secondary}</span>}
                 </span>
               </button>
             </li>
@@ -295,23 +243,17 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
         </ul>
       )}
 
-      {/* Recent Searches */}
       {showRecent && recentSearches.length > 0 && !isOpen && (
         <ul className="sd-search-dropdown">
           <li className="sd-search-dropdown-section">Recent Searches</li>
           {recentSearches.map((r) => (
             <li key={r.id}>
-              <button
-                className="sd-search-result"
-                onClick={() => handleRecentSelect(r)}
-              >
+              <button className="sd-search-result" onClick={() => handleSelect({ ...r, primary: r.address })}>
                 <Clock3 size={14} className="sd-result-icon" />
                 <span className="sd-result-text">
-                  <span className="sd-result-primary">
-                    {r.name.split(", ")[0]}
-                  </span>
+                  <span className="sd-result-primary">{r.address?.split(",")[0]}</span>
                   <span className="sd-result-secondary">
-                    {r.name.split(", ").slice(1).join(", ")}
+                    {r.address?.split(",").slice(1).join(",").trim()}
                   </span>
                 </span>
               </button>

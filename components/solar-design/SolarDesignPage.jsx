@@ -1,443 +1,137 @@
 "use client";
 
+/**
+ * Solar Design Studio shell — thin view layer over useDesignStore.
+ *
+ * Layout by step:
+ *   1-7  → map workspace + contextual side panel
+ *   7    → Three.js viewer overlays the map (viewer-only 3D review)
+ *   8    → full-width proposal document (map hidden, print-ready)
+ */
+
 import "./solar-design.css";
-import { useState, useCallback, useRef, useMemo } from "react";
-import MapCanvas from "./MapCanvas";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { RotateCcw, X, LogOut } from "lucide-react";
+import { useDesignStore } from "./store/useDesignStore";
+import MapView from "./map/MapView";
 import WizardStepper from "./WizardStepper";
-import Step1_Location from "./steps/Step1_Location";
-import Step2_SatelliteVerify from "./steps/Step2_SatelliteVerify";
-import Step3_RoofDetection from "./steps/Step3_RoofDetection";
-import Step4_MeasurementReview from "./steps/Step4_MeasurementReview";
-import Step5_ElectricityUsage from "./steps/Step5_ElectricityUsage";
-import Step6_Obstacles from "./steps/Step6_Obstacles";
-import Step7_PanelLayout from "./steps/Step7_PanelLayout";
-import Step8_DesignReview from "./steps/Step8_DesignReview";
-import Step9_Proposal from "./steps/Step9_Proposal";
-import { RotateCcw } from "lucide-react";
+import Step1_Locate from "./phases/Step1_Locate";
+import Step2_Roof from "./phases/Step2_Roof";
+import Step3_Obstacles from "./phases/Step3_Obstacles";
+import Step4_Energy from "./phases/Step4_Energy";
+import Step5_Summary from "./phases/Step5_Summary";
+import Step6_Layout from "./phases/Step6_Layout";
+import Step7_ThreeD from "./phases/Step7_ThreeD";
+import Step8_Proposal from "./phases/Step8_Proposal";
+
+// Three.js loads only when the 3D step is opened.
+const RoofScene = dynamic(() => import("./three/RoofScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="sd-three-overlay sd-three-loading">
+      <div className="sd-loading-spinner" />
+      <p>Building 3D model…</p>
+    </div>
+  ),
+});
+
+const STEP_VIEWS = {
+  1: Step1_Locate,
+  2: Step2_Roof,
+  3: Step3_Obstacles,
+  4: Step4_Energy,
+  5: Step5_Summary,
+  6: Step6_Layout,
+  7: Step7_ThreeD,
+};
 
 export default function SolarDesignPage() {
-  // ─── Core Wizard State ─────────────────────────────────────────
-  const [currentStep, setCurrentStep] = useState(1);
-  const [location, setLocation] = useState(null);
-  const [roofPolygon, setRoofPolygon] = useState(null);
-  const [obstacles, setObstacles] = useState([]);
-  const [panelLayout, setPanelLayout] = useState(null);
-  const [roofMetrics, setRoofMetrics] = useState(null);
-  const [energyReport, setEnergyReport] = useState(null);
-  const [electricityData, setElectricityData] = useState(null);
-  const [drawMode, setDrawMode] = useState(null); // "roof" | "obstacle" | null
-  const [viewMode, setViewMode] = useState("2d");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [saveStatus, setSaveStatus] = useState(null);
-  const [isAdjusting, setIsAdjusting] = useState(false);
-  const [setbackDistance, setSetbackDistance] = useState(0.5);
-  const [roofTilt, setRoofTilt] = useState(0);
+  const step = useDesignStore((s) => s.step);
+  const drawMode = useDesignStore((s) => s.ui.drawMode);
+  const error = useDesignStore((s) => s.ui.error);
+  const draftRestored = useDesignStore((s) => s.ui.draftRestored);
+  const { reset, setError, clearDraftRestored } = useDesignStore.getState();
 
-  // Obstacle drawing metadata (type, label, height)
-  const pendingObstacleRef = useRef(null);
-  const mapRef = useRef(null);
+  const mapInstruction =
+    drawMode === "roof"
+      ? "Click the corners of your roof · Backspace removes a point · click the first point or press Enter to finish"
+      : drawMode === "obstacle"
+      ? "Click the corners of the obstacle · click the first point to finish"
+      : drawMode === "edit"
+      ? "Drag corners to adjust · drag edge midpoints to add corners"
+      : step === 1
+      ? "Drag the marker to fine-tune the location"
+      : step === 6
+      ? "Click panels to include or exclude them"
+      : null;
 
-  // ─── Navigation ────────────────────────────────────────────────
-  const goTo = useCallback((step) => {
-    setCurrentStep(step);
-    setDrawMode(null);
-    setError(null);
-  }, []);
-
-  const goNext = useCallback(() => {
-    setCurrentStep((prev) => Math.min(prev + 1, 9));
-    setDrawMode(null);
-  }, []);
-
-  const goBack = useCallback(() => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-    setDrawMode(null);
-  }, []);
-
-  // ─── Step 1: Location ──────────────────────────────────────────
-  const handleLocationSelect = useCallback((loc) => {
-    setLocation(loc);
-    // Reset downstream data when location changes
-    setRoofPolygon(null);
-    setPanelLayout(null);
-    setRoofMetrics(null);
-    setEnergyReport(null);
-    setObstacles([]);
-    setElectricityData(null);
-  }, []);
-
-  // ─── Step 2: Satellite ─────────────────────────────────────────
-  const handleToggleAdjust = useCallback(() => {
-    setIsAdjusting((prev) => !prev);
-  }, []);
-
-  // ─── Step 3: Roof Drawing ──────────────────────────────────────
-  const handleStartRoofDraw = useCallback(() => {
-    setRoofPolygon(null);
-    setPanelLayout(null);
-    setRoofMetrics(null);
-    setEnergyReport(null);
-    setDrawMode("roof");
-  }, []);
-
-  const handleRoofComplete = useCallback((polygon) => {
-    setRoofPolygon(polygon);
-    setDrawMode(null);
-  }, []);
-
-  const handleClearRoof = useCallback(() => {
-    setRoofPolygon(null);
-    setPanelLayout(null);
-    setRoofMetrics(null);
-    setEnergyReport(null);
-    setDrawMode(null);
-  }, []);
-
-  // ─── Step 4: Measurements ──────────────────────────────────────
-  const handleRecalculateMeasurements = useCallback(async () => {
-    if (!roofPolygon) return;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/solar-design/generate-layout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roofPolygon: { type: "Polygon", coordinates: roofPolygon.coordinates },
-          obstacles: obstacles.map((o) => ({
-            type: "Polygon",
-            coordinates: o.coordinates,
-          })),
-          setbackDistance,
-          analysisOnly: true,
-        }),
-      });
-      const data = await res.json();
-
-      if (!data.success) throw new Error(data.error || "Measurement failed");
-      setRoofMetrics(data.roofMetrics);
-    } catch (err) {
-      console.error("Measurement error:", err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [roofPolygon, obstacles, setbackDistance]);
-
-  // ─── Step 6: Obstacles ─────────────────────────────────────────
-  const handleStartObstacleDraw = useCallback((meta) => {
-    pendingObstacleRef.current = meta;
-    setDrawMode("obstacle");
-  }, []);
-
-  const handleObstacleAdd = useCallback((polygon) => {
-    const meta = pendingObstacleRef.current || {};
-    setObstacles((prev) => [
-      ...prev,
-      {
-        ...polygon,
-        type: meta.type || "custom",
-        label: meta.label || "Obstacle",
-        heightM: meta.heightM || 1.5,
-      },
-    ]);
-    setDrawMode(null);
-    pendingObstacleRef.current = null;
-  }, []);
-
-  const handleDeleteObstacle = useCallback((idx) => {
-    setObstacles((prev) => prev.filter((_, i) => i !== idx));
-  }, []);
-
-  // ─── Step 7: Generate Layout ───────────────────────────────────
-  const handleGenerateLayout = useCallback(async () => {
-    if (!roofPolygon) return;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const layoutRes = await fetch("/api/solar-design/generate-layout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          roofPolygon: { type: "Polygon", coordinates: roofPolygon.coordinates },
-          obstacles: obstacles.map((o) => ({
-            type: "Polygon",
-            coordinates: o.coordinates,
-          })),
-          setbackDistance,
-          targetSystemSizeKW: electricityData?.recommendedKW || undefined,
-        }),
-      });
-      const layoutData = await layoutRes.json();
-
-      if (!layoutData.success) {
-        throw new Error(layoutData.error || "Failed to generate layout");
-      }
-
-      setPanelLayout(layoutData.panelLayout);
-      setRoofMetrics(layoutData.roofMetrics);
-
-      // Calculate energy
-      const energyRes = await fetch("/api/solar-design/calculate-energy", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemSizeKW: layoutData.panelLayout.systemSizeKW,
-          city: location?.city || "",
-          state: location?.state || "",
-          lat: location?.coordinates?.[1],
-          lng: location?.coordinates?.[0],
-        }),
-      });
-      const energyData = await energyRes.json();
-
-      if (energyData.success) {
-        setEnergyReport(energyData.energyReport);
-      }
-    } catch (err) {
-      console.error("Design generation error:", err);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [roofPolygon, obstacles, location, setbackDistance, electricityData]);
-
-  // ─── Step 8: View Mode ─────────────────────────────────────────
-  const handleViewModeChange = useCallback((mode) => {
-    setViewMode(mode);
-  }, []);
-
-  // ─── Step 9: Save ──────────────────────────────────────────────
-  const handleSaveProject = useCallback(async (customerInfo) => {
-    setSaveStatus("saving");
-    try {
-      const res = await fetch("/api/solar-design/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...customerInfo,
-          location,
-          roofPolygon: roofPolygon
-            ? { type: "Polygon", coordinates: roofPolygon.coordinates }
-            : {},
-          obstacles,
-          panelLayout,
-          energyReport,
-          roofMetrics,
-          status: "designed",
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSaveStatus("saved");
-        setTimeout(() => setSaveStatus(null), 3000);
-      } else {
-        throw new Error(data.error);
-      }
-    } catch (err) {
-      setSaveStatus("error");
-      setError(err.message);
-    }
-  }, [location, roofPolygon, obstacles, panelLayout, energyReport, roofMetrics]);
-
-  // ─── Reset ─────────────────────────────────────────────────────
-  const handleReset = useCallback(() => {
-    setCurrentStep(1);
-    setLocation(null);
-    setRoofPolygon(null);
-    setObstacles([]);
-    setPanelLayout(null);
-    setRoofMetrics(null);
-    setEnergyReport(null);
-    setElectricityData(null);
-    setDrawMode(null);
-    setViewMode("2d");
-    setError(null);
-    setIsAdjusting(false);
-    setSetbackDistance(0.5);
-    setRoofTilt(0);
-  }, []);
-
-  // ─── Map instruction based on step ─────────────────────────────
-  const mapInstruction = useMemo(() => {
-    if (drawMode === "roof") return "Click on corners of your roof. Double-click to finish.";
-    if (drawMode === "obstacle") return "Click to draw obstacle boundary. Double-click to finish.";
-    if (currentStep === 2 && isAdjusting) return "Drag the map to adjust the marker position.";
-    if (currentStep === 1) return null;
-    return null;
-  }, [currentStep, drawMode, isAdjusting]);
-
-  // ─── Render Step Panel ─────────────────────────────────────────
-  const renderStep = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <Step1_Location
-            location={location}
-            onLocationSelect={handleLocationSelect}
-            onNext={goNext}
-          />
-        );
-      case 2:
-        return (
-          <Step2_SatelliteVerify
-            location={location}
-            isAdjusting={isAdjusting}
-            onToggleAdjust={handleToggleAdjust}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 3:
-        return (
-          <Step3_RoofDetection
-            roofPolygon={roofPolygon}
-            isDrawing={drawMode === "roof"}
-            onStartDraw={handleStartRoofDraw}
-            onClearRoof={handleClearRoof}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 4:
-        return (
-          <Step4_MeasurementReview
-            roofPolygon={roofPolygon}
-            roofMetrics={roofMetrics}
-            setbackDistance={setbackDistance}
-            onSetbackChange={setSetbackDistance}
-            roofTilt={roofTilt}
-            onRoofTiltChange={setRoofTilt}
-            isLoading={isLoading}
-            onRecalculate={handleRecalculateMeasurements}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 5:
-        return (
-          <Step5_ElectricityUsage
-            roofMetrics={roofMetrics}
-            electricityData={electricityData}
-            onElectricityChange={setElectricityData}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 6:
-        return (
-          <Step6_Obstacles
-            obstacles={obstacles}
-            isDrawing={drawMode === "obstacle"}
-            onAddObstacle={handleObstacleAdd}
-            onDeleteObstacle={handleDeleteObstacle}
-            onStartDraw={handleStartObstacleDraw}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 7:
-        return (
-          <Step7_PanelLayout
-            roofPolygon={roofPolygon}
-            obstacles={obstacles}
-            location={location}
-            electricityData={electricityData}
-            panelLayout={panelLayout}
-            roofMetrics={roofMetrics}
-            energyReport={energyReport}
-            isLoading={isLoading}
-            onGenerate={handleGenerateLayout}
-            onRegenerate={handleGenerateLayout}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 8:
-        return (
-          <Step8_DesignReview
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-            panelLayout={panelLayout}
-            roofMetrics={roofMetrics}
-            onBack={goBack}
-            onNext={goNext}
-          />
-        );
-      case 9:
-        return (
-          <Step9_Proposal
-            location={location}
-            roofMetrics={roofMetrics}
-            panelLayout={panelLayout}
-            energyReport={energyReport}
-            onSave={handleSaveProject}
-            saveStatus={saveStatus}
-            onReset={handleReset}
-          />
-        );
-      default:
-        return null;
-    }
-  };
+  const StepView = STEP_VIEWS[step];
 
   return (
     <div className="sd-wizard-root">
-      {/* Wizard Header */}
       <header className="sd-wizard-header">
-        <div className="sd-wizard-title">
+        <Link href="/" className="sd-wizard-title" title="Back to website">
           <span className="sd-wizard-title-icon">☀️</span>
           <span className="sd-wizard-title-text">Solar Design Studio</span>
-        </div>
+        </Link>
 
-        <WizardStepper currentStep={currentStep} onStepClick={goTo} />
+        <WizardStepper />
 
         <div className="sd-wizard-actions">
-          {currentStep > 1 && (
-            <button className="sd-btn sd-btn-ghost sd-btn-sm" onClick={handleReset}>
+          {step > 1 && (
+            <button
+              className="sd-btn sd-btn-ghost sd-btn-sm"
+              onClick={() => {
+                if (confirm("Start a new design? The current draft will be cleared.")) reset();
+              }}
+            >
               <RotateCcw size={13} /> New
             </button>
           )}
+          <Link href="/" className="sd-btn sd-btn-ghost sd-btn-sm" title="Exit to website">
+            <LogOut size={13} /> Exit
+          </Link>
         </div>
       </header>
 
-      {/* Main Body: Map + Step Panel */}
       <main className="sd-wizard-body">
-        {/* Map */}
-        <div className="sd-map-panel">
-          <MapCanvas
-            ref={mapRef}
-            location={location}
-            roofPolygon={roofPolygon}
-            obstacles={obstacles}
-            panelLayout={panelLayout}
-            drawMode={drawMode}
-            viewMode={viewMode}
-            onRoofComplete={handleRoofComplete}
-            onObstacleAdd={handleObstacleAdd}
-          />
+        {step === 8 ? (
+          <Step8_Proposal />
+        ) : (
+          <>
+            <div className="sd-map-panel">
+              <MapView />
+              {step === 7 && <RoofScene />}
 
-          {/* Map instruction overlay */}
-          {mapInstruction && (
-            <div className="sd-map-instruction">{mapInstruction}</div>
-          )}
+              {mapInstruction && step !== 7 && (
+                <div className="sd-map-instruction">{mapInstruction}</div>
+              )}
 
-          {/* Error toast */}
-          {error && (
-            <div className="sd-error-toast">
-              <p>{error}</p>
-              <button onClick={() => setError(null)}>×</button>
+              {error && (
+                <div className="sd-error-toast">
+                  <p>{error}</p>
+                  <button onClick={() => setError(null)} aria-label="Dismiss">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              {draftRestored && step === 1 && (
+                <div className="sd-draft-chip">
+                  Draft restored from your last session
+                  <button onClick={clearDraftRestored} aria-label="Dismiss">
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Step Panel */}
-        <div className="sd-step-panel" key={currentStep}>
-          {renderStep()}
-        </div>
+            <div className="sd-step-panel" key={step}>
+              {StepView && <StepView />}
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

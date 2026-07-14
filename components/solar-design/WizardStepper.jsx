@@ -1,26 +1,27 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useDesignStore, STEPS } from "./store/useDesignStore";
 
-const STEPS = [
-  { num: 1, label: "Location", icon: "📍" },
-  { num: 2, label: "Satellite", icon: "🛰️" },
-  { num: 3, label: "Roof", icon: "🏠" },
-  { num: 4, label: "Measurements", icon: "📐" },
-  { num: 5, label: "Usage", icon: "⚡" },
-  { num: 6, label: "Obstacles", icon: "🚧" },
-  { num: 7, label: "Layout", icon: "☀️" },
-  { num: 8, label: "3D Review", icon: "🏗️" },
-  { num: 9, label: "Proposal", icon: "📄" },
-];
+/** Which step a user may jump to, given current data. */
+function stepAvailable(step, s) {
+  if (step === 1) return true;
+  if (!s.location) return false;
+  if (step >= 3 && !s.roof.polygon) return false;
+  if (step >= 6 && !s.design) return false;
+  return step <= Math.max(s.maxStepReached, s.step);
+}
 
-export default function WizardStepper({ currentStep, onStepClick }) {
+export default function WizardStepper() {
+  const step = useDesignStore((s) => s.step);
+  const store = useDesignStore();
+
   return (
     <div className="sd-stepper">
-      {STEPS.map((step, idx) => {
-        const isCompleted = step.num < currentStep;
-        const isActive = step.num === currentStep;
-        const isUpcoming = step.num > currentStep;
+      {STEPS.map((item, idx) => {
+        const isCompleted = item.num < step;
+        const isActive = item.num === step;
+        const clickable = !isActive && stepAvailable(item.num, store);
 
         const stateClass = isCompleted
           ? "sd-stepper-node--completed"
@@ -29,18 +30,18 @@ export default function WizardStepper({ currentStep, onStepClick }) {
           : "sd-stepper-node--upcoming";
 
         return (
-          <div key={step.num} className="sd-stepper-item">
+          <div key={item.num} className="sd-stepper-item">
             <button
-              className={`sd-stepper-node ${stateClass} ${isCompleted ? "clickable" : ""}`}
-              onClick={() => isCompleted && onStepClick?.(step.num)}
-              disabled={isUpcoming}
-              title={`Step ${step.num}: ${step.label}`}
+              className={`sd-stepper-node ${stateClass} ${clickable ? "clickable" : ""}`}
+              onClick={() => clickable && store.goToStep(item.num)}
+              disabled={!clickable && !isActive}
+              title={`Step ${item.num}: ${item.label}`}
               aria-current={isActive ? "step" : undefined}
             >
               <span className="sd-stepper-num">
-                {isCompleted ? <Check size={12} strokeWidth={3} /> : step.num}
+                {isCompleted ? <Check size={12} strokeWidth={3} /> : item.num}
               </span>
-              <span className="sd-stepper-label">{step.label}</span>
+              <span className="sd-stepper-label">{item.label}</span>
             </button>
 
             {idx < STEPS.length - 1 && (

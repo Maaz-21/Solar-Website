@@ -14,11 +14,14 @@ export async function POST(request) {
       customerPhone: body.customerPhone || "",
       location: body.location || {},
       roofPolygon: body.roofPolygon || {},
+      roof: body.roof || {},
       obstacles: body.obstacles || [],
+      electricityProfile: body.electricityProfile || {},
       panelLayout: body.panelLayout || {},
       panelSpecs: body.panelSpecs || {},
       energyReport: body.energyReport || {},
       roofMetrics: body.roofMetrics || {},
+      confidence: body.confidence || {},
       status: body.status || "draft",
     });
 
