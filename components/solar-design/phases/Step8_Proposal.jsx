@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import {
-  FileText, Save, CheckCircle, AlertCircle, Printer, RotateCcw, Loader2, ArrowLeft,
+  FileText, Send, CheckCircle, AlertCircle, Printer, RotateCcw, Loader2, ArrowLeft, Lock, Paperclip,
 } from "lucide-react";
 import { useDesignStore, activeSystemKW } from "../store/useDesignStore";
 
@@ -16,6 +16,18 @@ const fmtINR = (val) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(val ?? 0);
 const fmtNum = (val) => new Intl.NumberFormat("en-IN").format(val ?? 0);
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Same options as the site's contact form (components/Contact.jsx).
+const BILL_RANGES = ["Below ₹1500", "₹1500 – ₹2500", "₹2500 – ₹4000", "₹4000 – ₹8000", "Above ₹8000"];
+
+function billRangeFromAmount(amount) {
+  if (!amount || amount <= 0) return "";
+  if (amount < 1500) return BILL_RANGES[0];
+  if (amount <= 2500) return BILL_RANGES[1];
+  if (amount <= 4000) return BILL_RANGES[2];
+  if (amount <= 8000) return BILL_RANGES[3];
+  return BILL_RANGES[4];
+}
 
 export default function Step8_Proposal() {
   const location = useDesignStore((s) => s.location);
@@ -25,14 +37,34 @@ export default function Step8_Proposal() {
   const design = useDesignStore((s) => s.design);
   const report = useDesignStore((s) => s.report);
   const confidence = useDesignStore((s) => s.confidence);
+  const energyProfile = useDesignStore((s) => s.energyProfile);
   const mapSnapshot = useDesignStore((s) => s.ui.mapSnapshot);
   const threeSnapshot = useDesignStore((s) => s.ui.threeSnapshot);
   const saveStatus = useDesignStore((s) => s.ui.saveStatus);
-  const { saveProject, reset, prevStep } = useDesignStore.getState();
+  const enquirySubmitted = useDesignStore((s) => s.enquirySubmitted);
+  const { submitEnquiry, reset, prevStep } = useDesignStore.getState();
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [city, setCity] = useState(location?.city ?? "");
+  const [pincode, setPincode] = useState(location?.pincode ?? "");
+  const [billRange, setBillRange] = useState(billRangeFromAmount(energyProfile?.monthlyBill));
+  const [message, setMessage] = useState("");
+
+  const formValid =
+    customerName.trim() && customerPhone.trim() && customerEmail.trim();
+
+  const handleSubmit = () =>
+    submitEnquiry({
+      name: customerName.trim(),
+      phone: customerPhone.trim(),
+      email: customerEmail.trim(),
+      city: city.trim(),
+      pincode: pincode.trim(),
+      billRange,
+      message: message.trim(),
+    });
 
   const activeCount = design?.panels?.filter((p) => p.enabled !== false).length ?? 0;
   const kW = activeSystemKW(design);
@@ -194,35 +226,104 @@ export default function Step8_Proposal() {
       {/* Actions (not printed) */}
       <div className="sd-proposal-side">
         <div className="sd-card">
-          <div className="sd-card-title"><FileText size={14} /> Save Proposal</div>
-          <div className="sd-input-group">
-            <label className="sd-input-label">Your name *</label>
-            <input type="text" className="sd-input" value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)} placeholder="Full name" />
-          </div>
-          <div className="sd-input-group">
-            <label className="sd-input-label">Email</label>
-            <input type="email" className="sd-input" value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)} placeholder="your@email.com" />
-          </div>
-          <div className="sd-input-group">
-            <label className="sd-input-label">Phone</label>
-            <input type="tel" className="sd-input" value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)} placeholder="+91 XXXXX XXXXX" />
-          </div>
+          <div className="sd-card-title"><FileText size={14} /> Get Your Proposal</div>
+
+          {!enquirySubmitted ? (
+            <>
+              <p className="sd-field-note" style={{ marginTop: 0, marginBottom: 12 }}>
+                Submit your details to unlock the PDF download — our team will
+                also reach out with a formal quote.
+              </p>
+
+              <div className="sd-input-group">
+                <label className="sd-input-label">Your name *</label>
+                <input type="text" className="sd-input" value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)} placeholder="Full name" />
+              </div>
+              <div className="sd-input-group">
+                <label className="sd-input-label">Phone *</label>
+                <input type="tel" className="sd-input" value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)} placeholder="+91 XXXXX XXXXX" />
+              </div>
+              <div className="sd-input-group">
+                <label className="sd-input-label">Email *</label>
+                <input type="email" className="sd-input" value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)} placeholder="your@email.com" />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <div className="sd-input-group" style={{ flex: 1 }}>
+                  <label className="sd-input-label">City</label>
+                  <input type="text" className="sd-input" value={city}
+                    onChange={(e) => setCity(e.target.value)} placeholder="City" />
+                </div>
+                <div className="sd-input-group" style={{ flex: 1 }}>
+                  <label className="sd-input-label">Pincode</label>
+                  <input type="text" className="sd-input" value={pincode}
+                    onChange={(e) => setPincode(e.target.value)} placeholder="Pincode" />
+                </div>
+              </div>
+              <div className="sd-input-group">
+                <label className="sd-input-label">Monthly electricity bill</label>
+                <div className="sd-chip-select">
+                  {BILL_RANGES.map((range) => (
+                    <button
+                      key={range}
+                      type="button"
+                      className={`sd-chip-option ${billRange === range ? "active" : ""}`}
+                      onClick={() => setBillRange(range)}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="sd-input-group">
+                <label className="sd-input-label">Message (optional)</label>
+                <textarea
+                  className="sd-input sd-textarea"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Anything we should know?"
+                  rows={3}
+                />
+              </div>
+
+              <div className="sd-attached-note">
+                <Paperclip size={12} />
+                <span>
+                  Attached automatically: your address, roof size
+                  ({Math.round(metrics?.totalArea ?? 0)} m²), electricity usage
+                  and the {kW} kW design.
+                </span>
+              </div>
+
+              <button
+                className="sd-btn sd-btn-primary sd-btn-full"
+                onClick={handleSubmit}
+                disabled={!formValid || saveStatus === "saving"}
+              >
+                {saveStatus === "error" ? <><AlertCircle size={15} /> Error — retry</> :
+                 saveStatus === "saving" ? <><Loader2 size={15} className="sd-spin" /> Submitting...</> :
+                 <><Send size={15} /> Submit &amp; Unlock PDF</>}
+              </button>
+            </>
+          ) : (
+            <div className="sd-submitted-note">
+              <CheckCircle size={16} />
+              <div>
+                <strong>Details submitted!</strong>
+                <p>Your proposal is unlocked below. Our team will contact you shortly.</p>
+              </div>
+            </div>
+          )}
 
           <button
-            className="sd-btn sd-btn-primary sd-btn-full"
-            onClick={() => saveProject({ customerName, customerEmail, customerPhone })}
-            disabled={!customerName.trim() || saveStatus === "saving"}
+            className="sd-btn sd-btn-secondary sd-btn-full"
+            onClick={() => window.print()}
+            disabled={!enquirySubmitted}
+            title={enquirySubmitted ? "Print or save as PDF" : "Submit your details first"}
           >
-            {saveStatus === "saved" ? <><CheckCircle size={15} /> Saved!</> :
-             saveStatus === "error" ? <><AlertCircle size={15} /> Error — retry</> :
-             saveStatus === "saving" ? <><Loader2 size={15} className="sd-spin" /> Saving...</> :
-             <><Save size={15} /> Save Proposal</>}
-          </button>
-          <button className="sd-btn sd-btn-secondary sd-btn-full" onClick={() => window.print()}>
-            <Printer size={15} /> Print / Download PDF
+            {enquirySubmitted ? <Printer size={15} /> : <Lock size={13} />} Print / Download PDF
           </button>
           <button className="sd-btn sd-btn-ghost sd-btn-full" onClick={prevStep}>
             <ArrowLeft size={14} /> Back to 3D

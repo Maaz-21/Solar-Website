@@ -7,7 +7,7 @@ export async function POST(request) {
   try {
     await ConnectDB();
     const body = await request.json();
-    const { name, phone, email, message, city, pincode, billRange } = body;
+    const { name, phone, email, message, city, pincode, billRange, solarDesign } = body;
 
     if (!name || !phone || !email) {
       return NextResponse.json({ success: false, error: "Name, phone, and email are required" }, { status: 400 });
@@ -20,15 +20,26 @@ export async function POST(request) {
       message,
       city,
       pincode,
-      billRange
+      billRange,
+      ...(solarDesign ? { solarDesign } : {}),
     });
 
     // Send emails without blocking (fire and forget)
     (async () => {
       try {
         // 1. Send to Admin
+        const designHtml = solarDesign
+          ? `
+          <h3>Solar Design Studio details</h3>
+          <p><strong>Address:</strong> ${solarDesign.address || 'N/A'}</p>
+          <p><strong>Roof area:</strong> ${solarDesign.roofAreaM2 || 0} m² (usable ${solarDesign.usableAreaM2 || 0} m²)</p>
+          <p><strong>System designed:</strong> ${solarDesign.systemSizeKW || 0} kW · ${solarDesign.panelCount || 0} panels · ~${solarDesign.estimatedAnnualKWh || 0} kWh/yr</p>
+          <p><strong>Monthly bill / units:</strong> ₹${solarDesign.monthlyBill || 0} / ${solarDesign.monthlyUnits || 0} kWh @ ₹${solarDesign.tariff || 0}/kWh (${solarDesign.coverage || 0}% coverage goal)</p>
+        `
+          : "";
+
         const adminHtml = `
-          <h2>New Enquiry Received</h2>
+          <h2>New Enquiry Received${solarDesign ? " — Solar Design Studio" : ""}</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Phone:</strong> ${phone}</p>
           <p><strong>Email:</strong> ${email}</p>
@@ -36,6 +47,7 @@ export async function POST(request) {
           <p><strong>Pincode:</strong> ${pincode || 'N/A'}</p>
           <p><strong>Bill Range:</strong> ${billRange || 'N/A'}</p>
           <p><strong>Message:</strong> ${message || 'N/A'}</p>
+          ${designHtml}
           <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
         `;
         

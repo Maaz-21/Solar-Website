@@ -71,10 +71,10 @@ export default function SolarDesignPage() {
   return (
     <div className="sd-wizard-root">
       <header className="sd-wizard-header">
-        <Link href="/" className="sd-wizard-title" title="Back to website">
+        <div className="sd-wizard-title">
           <span className="sd-wizard-title-icon">☀️</span>
           <span className="sd-wizard-title-text">Solar Design Studio</span>
-        </Link>
+        </div>
 
         <WizardStepper />
 

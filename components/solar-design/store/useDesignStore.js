@@ -77,6 +77,7 @@ const initialState = {
   },
   report: null,
   confidence: null,
+  enquirySubmitted: false, // gates proposal printing until details are submitted
   history: { past: [], future: [] },
   ui: {
     drawMode: null, // null | 'roof' | 'obstacle' | 'edit'
@@ -186,6 +187,33 @@ function runLayout(state) {
 
   layout.panels = layout.panels.map((p) => ({ ...p, enabled: true }));
   return layout;
+}
+
+/** SolarProject payload for /api/solar-design/projects. */
+function buildProjectPayload(s, customerInfo) {
+  return {
+    ...customerInfo,
+    location: s.location,
+    roofPolygon: s.roof.polygon ?? {},
+    roof: {
+      roofType: s.roof.roofType,
+      tiltDeg: s.roof.tiltDeg,
+      tiltUserEdited: s.roof.tiltUserEdited,
+      setbackM: s.roof.setbackM,
+    },
+    obstacles: s.obstacles.map((o) => ({
+      polygon: o.polygon,
+      obstacleType: o.type,
+      label: o.label,
+      heightM: o.heightM,
+    })),
+    electricityProfile: s.energyProfile ?? { mode: "skipped" },
+    panelLayout: s.design ?? {},
+    energyReport: s.report ?? {},
+    roofMetrics: s.metrics ? { ...s.metrics, usableGeometry: undefined } : {},
+    confidence: s.confidence ?? {},
+    status: "designed",
+  };
 }
 
 async function fetchIrradiance(state) {
@@ -558,44 +586,73 @@ export const useDesignStore = create(
       setSnapshot: (kind, dataUrl) =>
         set((s) => ({ ui: { ...s.ui, [kind]: dataUrl } })),
 
-      saveProject: async (customerInfo) => {
+      /**
+       * Submit the customer enquiry (Enquiry model) with the full design
+       * context attached, and store the design record (SolarProject) in the
+       * background. Printing unlocks only after the enquiry succeeds.
+       */
+      submitEnquiry: async (form) => {
         const s = get();
-        set((st) => ({ ui: { ...st.ui, saveStatus: "saving" } }));
+        set((st) => ({ ui: { ...st.ui, saveStatus: "saving", error: null } }));
         try {
-          const res = await fetch("/api/solar-design/projects", {
+          const res = await fetch("/api/enquiries", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              ...customerInfo,
-              location: s.location,
-              roofPolygon: s.roof.polygon ?? {},
-              roof: {
-                roofType: s.roof.roofType,
-                tiltDeg: s.roof.tiltDeg,
-                tiltUserEdited: s.roof.tiltUserEdited,
-                setbackM: s.roof.setbackM,
+              name: form.name,
+              phone: form.phone,
+              email: form.email,
+              city: form.city || s.location?.city || "",
+              pincode: form.pincode || s.location?.pincode || "",
+              billRange: form.billRange || "",
+              message: form.message || "",
+              solarDesign: {
+                address: s.location?.address ?? "",
+                state: s.location?.state ?? "",
+                coordinates: s.location?.coordinates ?? undefined,
+                monthlyBill: s.energyProfile?.monthlyBill ?? 0,
+                monthlyUnits: s.energyProfile?.monthlyUnits ?? 0,
+                tariff: s.energyProfile?.tariff ?? 0,
+                coverage: s.energyProfile?.coverage ?? 0,
+                roofAreaM2: s.metrics?.totalArea ?? 0,
+                usableAreaM2: s.metrics?.usableArea ?? 0,
+                systemSizeKW: activeSystemKW(s.design),
+                panelCount: s.design?.panels?.filter((p) => p.enabled !== false).length ?? 0,
+                estimatedAnnualKWh: s.report?.annualGeneration ?? 0,
+                source: "design-studio",
               },
-              obstacles: s.obstacles.map((o) => ({
-                polygon: o.polygon,
-                obstacleType: o.type,
-                label: o.label,
-                heightM: o.heightM,
-              })),
-              electricityProfile: s.energyProfile ?? { mode: "skipped" },
-              panelLayout: s.design ?? {},
-              energyReport: s.report ?? {},
-              roofMetrics: s.metrics
-                ? { ...s.metrics, usableGeometry: undefined }
-                : {},
-              confidence: s.confidence ?? {},
-              status: "designed",
             }),
           });
           const data = await res.json();
-          if (!data.success) throw new Error(data.error || "Save failed");
+          if (!data.success) throw new Error(data.error || "Could not submit your details");
+
           set((st) => ({
-            ui: { ...st.ui, saveStatus: "saved", savedProjectId: data.project?._id ?? null },
+            enquirySubmitted: true,
+            ui: { ...st.ui, saveStatus: "saved" },
           }));
+
+          // Full design record for the admin panel — best effort, never
+          // blocks the customer.
+          fetch("/api/solar-design/projects", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              buildProjectPayload(get(), {
+                customerName: form.name,
+                customerEmail: form.email,
+                customerPhone: form.phone,
+              })
+            ),
+          })
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.success) {
+                set((st) => ({
+                  ui: { ...st.ui, savedProjectId: d.project?._id ?? null },
+                }));
+              }
+            })
+            .catch(() => {});
         } catch (err) {
           set((st) => ({ ui: { ...st.ui, saveStatus: "error", error: err.message } }));
         }
@@ -624,6 +681,7 @@ export const useDesignStore = create(
         designStale: s.designStale,
         report: s.report,
         confidence: s.confidence,
+        enquirySubmitted: s.enquirySubmitted,
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;

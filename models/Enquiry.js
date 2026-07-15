@@ -10,6 +10,26 @@ const EnquirySchema = new mongoose.Schema(
     billRange: String,
     message: String,
     status: { type: String, default: "new" }, // new | contacted | closed
+
+    // Present only when the enquiry comes from the Solar Design Studio —
+    // carries the context the sales team needs to follow up. No defaults,
+    // so regular contact-form enquiries stay untouched.
+    solarDesign: {
+      address: String,
+      state: String,
+      coordinates: { type: [Number], default: undefined }, // [lng, lat]
+      monthlyBill: Number,
+      monthlyUnits: Number,
+      tariff: Number,
+      coverage: Number,
+      roofAreaM2: Number,
+      usableAreaM2: Number,
+      systemSizeKW: Number,
+      panelCount: Number,
+      estimatedAnnualKWh: Number,
+      source: String, // e.g. "design-studio"
+    },
+
     replies: [
       {
         subject: String,
