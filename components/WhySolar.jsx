@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { motion } from "framer-motion";
 import { Wallet, ShieldCheck, CloudSun, Wrench, ArrowRight } from "lucide-react";
 
@@ -72,12 +74,12 @@ export default function WhySolar() {
           transition={{ delay: 0.5 }}
           className="mt-16"
         >
-          <a
+          <Link
             href="/projects"
             className="link-arrow group"
           >
             See our installations <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
 
       </div>

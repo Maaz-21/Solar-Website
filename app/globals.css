@@ -265,7 +265,284 @@ body {
     @apply border-primary bg-green-50 text-primary; 
   }
   
-  .select-chip-inactive { 
-    @apply border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-green-50; 
+  .select-chip-inactive {
+    @apply border-gray-200 text-gray-600 hover:border-primary hover:text-primary hover:bg-green-50;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SOLAR MOTION & DESIGN SYSTEM — shimmer CTAs, animated sun,
+   floating orbs, Design-Studio showcase, shared section accents
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes sun-rays-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes cta-shimmer {
+  0% { background-position: -180% center; }
+  100% { background-position: 180% center; }
+}
+/* ── Flagship CTA (navbar + mobile menu) ── */
+.navbar-studio-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(100deg, #1E7F4C 20%, #10b981 40%, #35d99a 50%, #10b981 60%, #1E7F4C 80%);
+  background-size: 220% auto;
+  animation: cta-shimmer 5.5s linear infinite;
+  box-shadow: 0 6px 20px -6px rgba(30, 127, 76, 0.55);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  white-space: nowrap;
+}
+.navbar-studio-cta:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 28px -6px rgba(30, 127, 76, 0.65);
+}
+
+/* ── Hero primary/secondary buttons (proper links, full click area) ── */
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  background: linear-gradient(100deg, #166437 15%, #1E7F4C 35%, #23a05f 50%, #1E7F4C 65%, #166437 85%);
+  background-size: 220% auto;
+  animation: cta-shimmer 6s linear infinite;
+  box-shadow: 0 12px 30px -8px rgba(30, 127, 76, 0.5);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px -8px rgba(30, 127, 76, 0.6);
+}
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--color-dark);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  transition: all 0.25s ease;
+}
+.btn-hero-secondary:hover {
+  border-color: #1E7F4C;
+  color: #1E7F4C;
+  transform: translateY(-2px);
+}
+
+/* ── Animated hero backdrop: drifting energy orbs (the top-right light
+      source itself comes from the page-wide SunlightFlow canvas) ── */
+.hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  pointer-events: none;
+  z-index: 0;
+}
+.hero-orb--green {
+  width: 380px;
+  height: 380px;
+  left: -140px;
+  bottom: -120px;
+  background: rgba(30, 127, 76, 0.16);
+  animation: float-y 11s ease-in-out infinite;
+}
+.hero-orb--gold {
+  width: 260px;
+  height: 260px;
+  left: 42%;
+  top: -80px;
+  background: rgba(246, 196, 69, 0.18);
+  animation: float-y 14s ease-in-out infinite reverse;
+}
+.hero-float-chip {
+  position: absolute;
+  top: 22px;
+  left: 22px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  color: #166437;
+  font-size: 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+  animation: float-y 6s ease-in-out infinite;
+}
+
+/* ── Shared section accents ── */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #1E7F4C;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+}
+.gradient-text {
+  background: linear-gradient(95deg, #1E7F4C, #10b981 55%, #F6C445);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Design Studio showcase ── */
+.studio-showcase {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #f6faf7 60%, #ffffff 100%);
+}
+.studio-showcase-glow {
+  position: absolute;
+  right: -180px;
+  top: 10%;
+  width: 520px;
+  height: 520px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(30, 127, 76, 0.1) 0%, transparent 65%);
+  pointer-events: none;
+}
+.studio-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 8px;
+}
+.studio-feature-list li {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.studio-feature-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #1E7F4C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.studio-mock {
+  position: relative;
+  border-radius: 18px;
+  background: #0d1420;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 30px 70px -24px rgba(13, 20, 32, 0.55);
+  overflow: visible;
+}
+.studio-mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.studio-mock-bar span {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.studio-mock-bar span:first-child { background: #f87171; }
+.studio-mock-bar span:nth-child(2) { background: #fbbf24; }
+.studio-mock-bar span:nth-child(3) { background: #34d399; }
+.studio-mock-bar em {
+  font-style: normal;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-left: 10px;
+  font-weight: 600;
+}
+.studio-mock-canvas {
+  position: relative;
+  border-radius: 0 0 18px 18px;
+  overflow: visible;
+}
+.studio-mock-canvas svg {
+  display: block;
+  border-radius: 0 0 17px 17px;
+}
+.studio-mock-chip {
+  position: absolute;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #14532d;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(13, 20, 32, 0.35);
+  border: 1px solid #d1fae5;
+  white-space: nowrap;
+  animation: float-y 7s ease-in-out infinite;
+}
+.studio-mock-chip:nth-of-type(2) { animation-delay: 1.2s; }
+.studio-mock-chip:nth-of-type(3) { animation-delay: 2.4s; }
+
+/* ── Final CTA sun rays ── */
+.cta-sun-rays {
+  position: absolute;
+  inset: -40%;
+  z-index: 0;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(255, 255, 255, 0.05) 0deg 5deg,
+    transparent 5deg 22deg
+  );
+  animation: sun-rays-spin 80s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Accessibility ── */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #1E7F4C;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb,
+  .hero-float-chip,
+  .cta-sun-rays,
+  .studio-mock-chip,
+  .navbar-studio-cta,
+  .btn-hero-primary {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }

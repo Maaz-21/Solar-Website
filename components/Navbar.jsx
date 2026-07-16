@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState} from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Menu, X, Globe } from "lucide-react";
+import { ChevronDown, Menu, X, Globe, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 const navLinks = [
@@ -14,10 +14,12 @@ const navLinks = [
   { href: "/about", label: "About" },
 ];
 
+// The Design Studio is the site's flagship lead-gen tool — it lives as the
+// primary CTA, not buried in this dropdown.
 const dropdownItems = [
   { href: "/calculator", label: "Solar Calculator" },
-  { href: "/solar-design", label: "Solar Design Studio" },
   { href: "/faq", label: "FAQs" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 function DropdownMenu({ items }) {
@@ -34,6 +36,7 @@ function DropdownMenu({ items }) {
     </div>
   );
 }
+
 function LanguageSelector({ currentLang, onChange }) {
   return (
     <div className="nav-dropdown">
@@ -50,7 +53,7 @@ function LanguageSelector({ currentLang, onChange }) {
   );
 }
 
-function MobileMenu({ links, currentLang, onLanguageChange }) {
+function MobileMenu({ links, currentLang, onLanguageChange, onNavigate }) {
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -59,16 +62,21 @@ function MobileMenu({ links, currentLang, onLanguageChange }) {
       className="mobile-menu"
     >
       <div className="mobile-menu-list">
+        <Link href="/solar-design" className="navbar-studio-cta w-full justify-center" onClick={onNavigate}>
+          <Sparkles className="w-4 h-4" /> Design Your Solar — Free
+        </Link>
         {links.map(({ href, label }) => (
-          <Link key={href} href={href} className="mobile-link">{label}</Link>
+          <Link key={href} href={href} className="mobile-link" onClick={onNavigate}>{label}</Link>
         ))}
-        <DropdownMenu items={dropdownItems} />
+        <Link href="/calculator" className="mobile-link" onClick={onNavigate}>Solar Calculator</Link>
+        <Link href="/faq" className="mobile-link" onClick={onNavigate}>FAQs</Link>
         <LanguageSelector currentLang={currentLang} onChange={onLanguageChange} />
-        <Link href="/contact" className="mobile-cta">Contact Us</Link>
+        <Link href="/contact" className="mobile-cta" onClick={onNavigate}>Contact Us</Link>
       </div>
     </motion.div>
   );
 }
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState("en");
@@ -84,66 +92,64 @@ export default function Navbar() {
 
   return (
     <header className="navbar">
-      <nav className="nav-container">
-          {/* Logo */}
-          <Link href="/" className="logo-link">
-            <span>
-              <Image
-                  src="/logo.png" 
-                  alt="Team installing solar panels"
-                  width={70} 
-                  height={20}  
-                  priority     // Logos should usually load immediately
-                  />
+      <nav className="nav-container" aria-label="Main navigation">
+        {/* Logo */}
+        <Link href="/" className="logo-link">
+          <span>
+            <Image
+              src="/logo.png"
+              alt="SolarOwl logo"
+              width={70}
+              height={20}
+              priority
+            />
+          </span>
+          <div className="flex flex-col">
+            <span className="font-bold text-xl leading-none text-gray-900">
+              SolarOwl
             </span>
-            <div className="flex flex-col">
-              <span className="font-bold text-xl leading-none text-gray-900">
-                SolarOwl
-              </span>
-              <span className="text-xs text-gray-500 mt-1">
-                Energy Solutions Pvt. Ltd.
-              </span>
-            </div>
+            <span className="text-xs text-gray-500 mt-1">
+              Energy Solutions Pvt. Ltd.
+            </span>
+          </div>
+        </Link>
+
+        {/* Desktop Nav */}
+        <div className="desktop-nav">
+          {navLinks.map(({ href, label }) => (
+            <NavLink key={href} href={href}>{label}</NavLink>
+          ))}
+          <DropdownMenu items={dropdownItems} />
+        </div>
+
+        {/* Desktop CTAs + Language */}
+        <div className="desktop-nav !gap-4">
+          <LanguageSelector currentLang={currentLang} onChange={changeLanguage} />
+          <Link href="/contact" className="nav-link">Contact</Link>
+          <Link href="/solar-design" className="navbar-studio-cta">
+            <Sparkles className="w-4 h-4" /> Design Your Solar
           </Link>
+        </div>
 
-          {/* Desktop Nav */}
-          <div className="desktop-nav">
-              {navLinks.map(({ href, label }) => (
-                <NavLink key={href} href={href}>{label}</NavLink>
-              ))}
-              <DropdownMenu items={dropdownItems} />
-          </div>
-
-          {/* Desktop CTA + Language */}
-          <div className="desktop-nav">
-              <LanguageSelector 
-                currentLang={currentLang} 
-                onChange={changeLanguage} 
-              />
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-primary navbar-cta"
-              >
-                <Link href="/contact">Contact</Link>
-              </motion.button>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button 
-            className="mobile-toggle"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X /> : <Menu />}
-          </button>
+        {/* Mobile Menu Toggle */}
+        <button
+          className="mobile-toggle"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
+        >
+          {mobileMenuOpen ? <X /> : <Menu />}
+        </button>
       </nav>
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <MobileMenu 
-            links={navLinks} 
+          <MobileMenu
+            links={navLinks}
             currentLang={currentLang}
             onLanguageChange={changeLanguage}
+            onNavigate={() => setMobileMenuOpen(false)}
           />
         )}
       </AnimatePresence>

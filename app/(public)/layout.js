@@ -2,6 +2,7 @@
 
 import Chatbot from "@/components/Chatbot";
 import WhatsappFloat from "@/components/WhatsappFloat";
+import ParticleField from "@/components/ParticleField";
 import Script from "next/script";
 import { useEffect } from "react";
 
@@ -21,6 +22,7 @@ export default function PublicLayout({ children }) {
 
   return (
     <>
+      <ParticleField />
       {children}
       <WhatsappFloat />
       <Chatbot />

@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowRight, Calculator, CheckCircle2, Zap, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Calculator, CheckCircle2, Zap, ShieldCheck, Sparkles } from "lucide-react";
 
 const slides = [
   {
@@ -25,21 +25,9 @@ const slides = [
 ];
 
 const metrics = [
-  {
-    icon: Zap,
-    label: "2MW+",
-    sub: "Installations",
-  },
-  {
-    icon: ShieldCheck,
-    label: "Startup India",
-    sub: "DIPP113232 Certified",
-  },
-  {
-    icon: CheckCircle2,
-    label: "Govt Subsidy",
-    sub: "PM Surya Ghar Support",
-  },
+  { icon: Zap, label: "2MW+", sub: "Installations" },
+  { icon: ShieldCheck, label: "Startup India", sub: "DIPP113232 Certified" },
+  { icon: CheckCircle2, label: "Govt Subsidy", sub: "PM Surya Ghar Support" },
 ];
 
 export default function Hero() {
@@ -54,13 +42,17 @@ export default function Hero() {
 
   return (
     <section className="hero-section">
-      {/* Pattern Overlay */}
-     <div className="hero-pattern" />
+      {/* Ambient backdrop — the page-wide SunlightFlow effect provides the
+          light source in the top-right; here only soft orbs + dot pattern. */}
+      <div className="hero-orb hero-orb--green" aria-hidden="true" />
+      <div className="hero-orb hero-orb--gold" aria-hidden="true" />
+      <div className="hero-pattern" aria-hidden="true" />
+
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          
+
           {/* Left Text Content */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="max-w-2xl"
@@ -73,35 +65,39 @@ export default function Hero() {
               #1 Solar Installer in Your Region
             </div>
 
-            <h1 className="hero-heading"> {slides[active].title} </h1>
-            <p className="hero-subtitle"> {slides[active].subtitle} </p>
-
-            <div className="flex flex-wrap items-center gap-4 mb-10">
-              <motion.button 
-                whileHover={{ scale: 1.03, boxShadow: "0 10px 25px -5px rgba(30, 127, 76, 0.3)" }}
-                whileTap={{ scale: 0.98 }}
-                className="btn-primary px-8 py-4 rounded-lg flex items-center gap-2 font-semibold"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.45 }}
               >
-               <Link href="/contact">Get free quote </Link> <ArrowRight className="w-4 h-4" />
-              </motion.button>
+                <h1 className="hero-heading">{slides[active].title}</h1>
+                <p className="hero-subtitle">{slides[active].subtitle}</p>
+              </motion.div>
+            </AnimatePresence>
 
-              <motion.button 
-                whileHover={{ scale: 1.03, backgroundColor: "#f9fafb" }}
-                whileTap={{ scale: 0.98 }}
-                className="px-8 py-4 rounded-lg font-semibold text-dark border border-gray-200 bg-white shadow-sm transition-all flex items-center gap-2 outline-none"
-              >
-                <Calculator className="w-4 h-4 text-gray-500" /> <Link href="/calculator">Savings calculator</Link>
-              </motion.button>
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <Link href="/solar-design" className="btn-hero-primary">
+                <Sparkles className="w-5 h-5" />
+                Design Your Solar in 3D
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+
+              <Link href="/contact" className="btn-hero-secondary">
+                Get free quote
+              </Link>
             </div>
 
+            <Link href="/calculator" className="link-arrow mb-10 inline-flex">
+              <Calculator className="w-4 h-4 mr-1.5" /> Or try the quick savings calculator
+            </Link>
+
             {/* Metric Chips */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 mt-8">
               {metrics.map((m, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ y: -5 }}
-                  className="metric-card"
-                >
+                <motion.div key={i} whileHover={{ y: -5 }} className="metric-card">
                   <m.icon className="w-6 h-6 text-primary mb-2" />
                   <div className="font-bold text-dark text-lg">{m.label}</div>
                   <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">{m.sub}</div>
@@ -110,30 +106,44 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* Right Image Panel */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 10, scale: 1.1 }}
-            transition={{ duration: 0.8, delay: 1 }}
+          {/* Right Image Panel — stacked slides crossfade instead of hard swap */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
             className="hero-image-wrapper"
           >
-             <Image
-                src={slides[active].image} alt="Solar installation"
-                fill priority
-                className="object-cover transition-transform duration-700 hover:scale-105"
+            {slides.map((slide, index) => (
+              <Image
+                key={slide.image}
+                src={slide.image}
+                alt={slide.title}
+                fill
+                priority={index === 0}
+                className={`object-cover transition-opacity duration-1000 ${
+                  active === index ? "opacity-100" : "opacity-0"
+                }`}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
-              
-              {/* Carousel Dots */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                {slides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setActive(index)}
-                    className={`carousel-dot ${active === index && "carousel-dot-active"}`}
-                  />
-                ))}
-              </div>
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+
+            {/* Floating proof chip */}
+            <div className="hero-float-chip" aria-hidden="true">
+              <Zap className="w-4 h-4" />
+              <span>₹0 electricity bill — Panvel installation</span>
+            </div>
+
+            {/* Carousel Dots */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setActive(index)}
+                  aria-label={`Show slide ${index + 1}`}
+                  className={`carousel-dot ${active === index ? "carousel-dot-active" : ""}`}
+                />
+              ))}
+            </div>
           </motion.div>
 
         </div>

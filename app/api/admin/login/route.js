@@ -93,9 +93,16 @@ export async function POST(req) {
       );
     }
 
-    // 4. Create Session Token
-    // Ensure you have a JWT_SECRET in your .env file
-    const secret = process.env.JWT_SECRET || "default_secret_do_not_use_in_production";
+    // 4. Create Session Token — refuse to run without a real secret;
+    // a hardcoded fallback would let anyone forge admin tokens.
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error("JWT_SECRET is not configured — admin login disabled.");
+      return NextResponse.json(
+        { message: "Server configuration error" },
+        { status: 500 }
+      );
+    }
     const token = jwt.sign(
       { id: admin._id, email: admin.email, role: admin.role },
       secret,

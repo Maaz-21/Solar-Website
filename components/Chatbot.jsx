@@ -18,14 +18,6 @@ export default function Chatbot() {
   const [showCta, setShowCta] = useState(false);  // ✅ Renamed from showForm
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    fetchFaqs();
-  }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const fetchFaqs = async () => {
     try {
       const res = await fetch("/api/faq");
@@ -41,6 +33,16 @@ export default function Chatbot() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  useEffect(() => {
+    fetchFaqs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim()) return;

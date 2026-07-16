@@ -20,6 +20,13 @@ export async function GET() {
       "Bill Range": enq.billRange,
       Message: enq.message,
       Status: enq.status,
+      Source: enq.solarDesign?.source === "design-studio" ? "Design Studio" : "Website",
+      "Design Address": enq.solarDesign?.address ?? "",
+      "Roof Area (m²)": enq.solarDesign?.roofAreaM2 ?? "",
+      "System (kW)": enq.solarDesign?.systemSizeKW ?? "",
+      "Panels": enq.solarDesign?.panelCount ?? "",
+      "Est. kWh/yr": enq.solarDesign?.estimatedAnnualKWh ?? "",
+      "Monthly Bill (₹)": enq.solarDesign?.monthlyBill || "",
       "Created Date": new Date(enq.createdAt).toLocaleString("en-IN"),
     }));
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { CheckCircle2, MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import Link from "next/link";
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Sparkles } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="bg-[#0F172A] text-gray-300 pt-16 pb-8 border-t border-gray-800">
@@ -34,20 +35,26 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-semibold mb-5">Quick Links</h4>
           <ul className="space-y-3 text-sm">
-            <FooterLink>About Us</FooterLink>
-            <FooterLink>Solutions</FooterLink>
-            <FooterLink>Projects</FooterLink>
-            <FooterLink>Blog</FooterLink>
+            <FooterLink href="/about">About Us</FooterLink>
+            <FooterLink href="/solutions">Solutions</FooterLink>
+            <FooterLink href="/projects">Projects</FooterLink>
+            <FooterLink href="/blog">Blog</FooterLink>
+            <FooterLink href="/faq">FAQs</FooterLink>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-5">Services</h4>
+          <h4 className="text-white font-semibold mb-5">Tools & Services</h4>
           <ul className="space-y-3 text-sm">
-            <FooterLink>Residential Solar</FooterLink>
-            <FooterLink>Commercial Solar</FooterLink>
-            <FooterLink>Solar Maintenance</FooterLink>
-            <FooterLink>Financing</FooterLink>
+            <li>
+              <Link href="/solar-design" className="inline-flex items-center gap-2 text-secondary font-semibold hover:text-yellow-300 transition-colors">
+                <Sparkles className="w-3.5 h-3.5" /> Solar Design Studio
+              </Link>
+            </li>
+            <FooterLink href="/calculator">Savings Calculator</FooterLink>
+            <FooterLink href="/solutions">Residential Solar</FooterLink>
+            <FooterLink href="/solutions">Commercial Solar</FooterLink>
+            <FooterLink href="/contact">Get a Quote</FooterLink>
           </ul>
         </div>
 
@@ -58,7 +65,7 @@ export default function Footer() {
               <MapPin className="w-5 h-5 text-primary shrink-0 mt-1" />
               <span className="flex-1">
                 SolarOwl Energy Solutions Private Limited,
-                Kalsekar Incubation Center, Anjuman-I-Islam's
+                Kalsekar Incubation Center, Anjuman-I-Islam&apos;s
                 Kalsekar Technical Campus, Address - Plot 2 & 3,
                 Sector 16, Khandagaon, Near Thana Naka,
                 New Panvel, Panvel, Maharashtra, India - 410206
@@ -90,13 +97,13 @@ export default function Footer() {
   );
 }
 
-function FooterLink({ children }) {
+function FooterLink({ href = "#", children }) {
   return (
     <li>
-      <a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group">
+      <Link href={href} className="hover:text-primary transition-colors flex items-center gap-2 group">
         <span className="w-1 h-1 bg-gray-600 rounded-full group-hover:bg-primary transition-colors"></span>
         {children}
-      </a>
+      </Link>
     </li>
   );
 }

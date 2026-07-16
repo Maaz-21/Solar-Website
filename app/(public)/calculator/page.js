@@ -1,16 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Calculator, IndianRupee, Sun, BatteryCharging, Calendar } from "lucide-react";
+import { Calculator, IndianRupee, Sun, BatteryCharging, Calendar, Sparkles, ArrowRight, Leaf } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import {
+  getStateTariff,
+  getOfflinePSH,
+  specificYieldFromPSH,
+  buildEnergyReport,
+  DEFAULT_PANEL,
+} from "@/lib/solar-engine";
+
+// Gross roof area per kW including spacing/setbacks (~8 m² ≈ 86 sq ft).
+const SQFT_PER_M2 = 10.764;
+const GROSS_M2_PER_KW = 8;
 
 export default function SolarCalculator() {
   const [formData, setFormData] = useState({
     monthlyBill: "",
     state: "",
     roofSize: "",
-    subsidy: false,
+    subsidy: true,
   });
 
   const [results, setResults] = useState(null);
@@ -24,53 +36,63 @@ export default function SolarCalculator() {
     "Delhi", "Jammu and Kashmir", "Ladakh", "Puducherry"
   ];
 
+  // Same engine as the Solar Design Studio, so both tools always agree:
+  //  - tariff defaults per selected state (editable data table)
+  //  - solar yield from the state's Peak Sun Hours, not a flat constant
+  //  - PM Surya Ghar subsidy slabs (₹30k/kW ≤2kW, ₹18k 3rd kW, cap ₹78k)
+  //  - savings capped at what the system actually generates vs. usage
+  //  - payback from a 25-year cash flow with panel degradation
   const calculateROI = (e) => {
     e.preventDefault();
-    
+
     const bill = parseFloat(formData.monthlyBill);
-    const roof = parseFloat(formData.roofSize);
-    
-    if (!bill || !roof) return;
+    const roofSqft = parseFloat(formData.roofSize);
+    if (!bill || !roofSqft) return;
 
-    // Constants
-    const UNITS_PER_KW_DAILY = 4.5;
-    const DAYS_IN_MONTH = 30;
-    const PRICE_PER_UNIT = 7;
-    const INSTALLATION_COST_PER_KW = 55000;
-    const SQFT_PER_KW = 100; // Approx roof area needed for 1kW
+    const tariff = getStateTariff(formData.state);
+    const { psh } = getOfflinePSH({ state: formData.state });
+    const specificYield = specificYieldFromPSH(psh); // kWh per kWp per year
 
-    // 1. Calculate System Size
-    // Formula: systemSize = monthlyBill / (4.5 * 30 * 7)
-    let systemSize = bill / (UNITS_PER_KW_DAILY * DAYS_IN_MONTH * PRICE_PER_UNIT);
-    systemSize = Math.round(systemSize * 10) / 10; // Round to 1 decimal
+    // Size to consumption, then cap by roof space.
+    const monthlyUnits = bill / tariff;
+    const annualUsage = monthlyUnits * 12;
+    const recommendedKW = annualUsage / specificYield;
+    const maxSystemByRoof = (roofSqft / SQFT_PER_M2) / GROSS_M2_PER_KW;
+    const systemSize = Math.max(Math.round(Math.min(recommendedKW, maxSystemByRoof) * 10) / 10, 0.5);
+    const isRoofSufficient = maxSystemByRoof >= recommendedKW;
 
-    // Check if roof is sufficient
-    const maxSystemByRoof = roof / SQFT_PER_KW;
-    const isRoofSufficient = maxSystemByRoof >= systemSize;
+    const report = buildEnergyReport({
+      systemSizeKW: systemSize,
+      specificYield,
+      yieldSource: "table",
+      tariff,
+      panelCount: Math.round((systemSize * 1000) / DEFAULT_PANEL.wattage),
+      subsidySchemeId: formData.subsidy ? "pm-surya-ghar" : "none",
+    });
+    if (!report) return;
 
-    // 2. Calculate Cost
-    let totalCost = systemSize * INSTALLATION_COST_PER_KW;
-
-    // 3. Apply Subsidy
-    let subsidyAmount = 0;
-    if (formData.subsidy) {
-      subsidyAmount = totalCost * 0.30;
-      totalCost = totalCost - subsidyAmount;
-    }
-
-    // 4. Annual Savings
-    const annualSavings = bill * 12;
-
-    // 5. Break-even Period
-    const breakEvenYears = totalCost / annualSavings;
+    // Savings can never exceed the current bill (self-consumption +
+    // net-metering credit against usage).
+    const generationValue = report.financial.firstYearSavings;
+    const billValue = bill * 12;
+    const annualSavings = Math.min(generationValue, billValue);
+    const coveragePct = Math.min(Math.round((report.annualGeneration / annualUsage) * 100), 100);
 
     setResults({
       systemSize,
-      totalCost: Math.round(totalCost),
+      panelCount: Math.round((systemSize * 1000) / DEFAULT_PANEL.wattage),
+      tariff,
+      grossCost: report.financial.grossCost,
+      subsidyAmount: report.financial.subsidyAmount,
+      totalCost: report.financial.netCost,
       annualSavings: Math.round(annualSavings),
-      breakEvenYears: breakEvenYears.toFixed(1),
+      annualGeneration: report.annualGeneration,
+      breakEvenYears: report.financial.paybackYears ?? "—",
+      lifetimeSavings: report.financial.lifetimeSavings,
+      co2Yearly: report.co2SavingsYearlyKg,
+      coveragePct,
       isRoofSufficient,
-      maxSystemByRoof: Math.round(maxSystemByRoof * 10) / 10
+      maxSystemByRoof: Math.round(maxSystemByRoof * 10) / 10,
     });
   };
 
@@ -189,47 +211,73 @@ export default function SolarCalculator() {
             ) : (
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="bg-green-600 p-6 text-white text-center">
-                  <h3 className="text-lg font-medium opacity-90">Estimated System Size</h3>
+                  <h3 className="text-lg font-medium opacity-90">Recommended System Size</h3>
                   <div className="text-4xl font-bold mt-2">{results.systemSize} kW</div>
+                  <div className="text-sm mt-1 opacity-90">
+                    ≈ {results.panelCount} panels · covers ~{results.coveragePct}% of your usage
+                  </div>
                   {!results.isRoofSufficient && (
                     <div className="mt-2 text-xs bg-red-500/20 py-1 px-2 rounded inline-block border border-red-400/30">
-                      Warning: Roof area may be too small (Max: {results.maxSystemByRoof} kW)
+                      Sized to your roof — space limits it to {results.maxSystemByRoof} kW
                     </div>
                   )}
                 </div>
 
-                <div className="p-6 grid grid-cols-1 gap-6">
-                  <ResultCard 
-                    icon={IndianRupee} 
-                    label="Estimated Cost" 
-                    value={`₹${results.totalCost.toLocaleString()}`}
-                    subtext={formData.subsidy ? "Includes 30% subsidy" : "Without subsidy"}
+                <div className="p-6 grid grid-cols-1 gap-4">
+                  <ResultCard
+                    icon={IndianRupee}
+                    label="Net Cost After Subsidy"
+                    value={`₹${results.totalCost.toLocaleString("en-IN")}`}
+                    subtext={
+                      results.subsidyAmount > 0
+                        ? `₹${results.grossCost.toLocaleString("en-IN")} − ₹${results.subsidyAmount.toLocaleString("en-IN")} PM Surya Ghar subsidy`
+                        : "Without subsidy"
+                    }
                     color="text-blue-600"
                     bgColor="bg-blue-50"
                   />
-                  
-                  <ResultCard 
-                    icon={BatteryCharging} 
-                    label="Annual Savings" 
-                    value={`₹${results.annualSavings.toLocaleString()}`}
-                    subtext="Based on current bill"
+
+                  <ResultCard
+                    icon={BatteryCharging}
+                    label="First-Year Savings"
+                    value={`₹${results.annualSavings.toLocaleString("en-IN")}`}
+                    subtext={`~${results.annualGeneration.toLocaleString("en-IN")} kWh/yr @ ₹${results.tariff}/kWh (${formData.state || "your state"})`}
                     color="text-green-600"
                     bgColor="bg-green-50"
                   />
 
-                  <ResultCard 
-                    icon={Calendar} 
-                    label="Break-even Period" 
+                  <ResultCard
+                    icon={Calendar}
+                    label="Payback Period"
                     value={`${results.breakEvenYears} Years`}
-                    subtext="ROI Timeframe"
+                    subtext={`₹${results.lifetimeSavings.toLocaleString("en-IN")} saved over 25 years`}
                     color="text-purple-600"
                     bgColor="bg-purple-50"
                   />
+
+                  <ResultCard
+                    icon={Leaf}
+                    label="CO₂ Avoided"
+                    value={`${results.co2Yearly.toLocaleString("en-IN")} kg/yr`}
+                    subtext="Equivalent to planting ~50 trees a year"
+                    color="text-emerald-600"
+                    bgColor="bg-emerald-50"
+                  />
                 </div>
-                
-                <div className="px-6 pb-6">
+
+                <div className="px-6 pb-6 space-y-4">
+                  <Link
+                    href="/solar-design"
+                    className="btn-hero-primary w-full justify-center py-3.5! text-sm"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Get exact numbers on your real roof
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
                   <p className="text-xs text-gray-400 text-center">
-                    *Estimates are approximate. Actual generation depends on location, shading, and equipment efficiency.
+                    *Same calculation engine as our Design Studio. Estimates use your
+                    state&apos;s average tariff and solar resource — actual generation
+                    depends on roof orientation, shading and equipment.
                   </p>
                 </div>
               </div>
@@ -238,7 +286,7 @@ export default function SolarCalculator() {
         </div>
       </div>
     </div>
-  </>  
+  </>
   );
 }
 

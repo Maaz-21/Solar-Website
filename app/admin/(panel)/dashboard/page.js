@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  MessageSquare, 
-  FolderKanban, 
-  FileText, 
+import Link from "next/link";
+import {
+  Users,
+  MessageSquare,
+  FolderKanban,
+  FileText,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Sun,
+  Zap,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -15,7 +18,10 @@ export default function Dashboard() {
     enquiries: 0,
     newEnquiries: 0,
     projects: 0,
-    blogs: 0
+    blogs: 0,
+    solarDesigns: 0,
+    studioLeads: 0,
+    totalDesignedKW: 0,
   });
   const [recentEnquiries, setRecentEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,47 +87,76 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: "Total Enquiries",
-      value: stats.enquiries,
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
       title: "New Enquiries",
       value: stats.newEnquiries,
       icon: MessageSquare,
       color: "bg-green-500",
+      href: "/admin/enquiries",
+      sub: `${stats.enquiries} total`,
     },
     {
-      title: "Total Projects",
+      title: "Studio Designs",
+      value: stats.solarDesigns,
+      icon: Sun,
+      color: "bg-amber-500",
+      href: "/admin/solar-designs",
+      sub: `${stats.studioLeads} became leads`,
+    },
+    {
+      title: "Capacity Designed",
+      value: `${stats.totalDesignedKW} kW`,
+      icon: Zap,
+      color: "bg-sky-500",
+      href: "/admin/solar-designs",
+      sub: "via Design Studio",
+    },
+    {
+      title: "Total Enquiries",
+      value: stats.enquiries,
+      icon: Users,
+      color: "bg-blue-500",
+      href: "/admin/enquiries",
+      sub: "all sources",
+    },
+    {
+      title: "Projects",
       value: stats.projects,
       icon: FolderKanban,
       color: "bg-purple-500",
+      href: "/admin/projects",
+      sub: "published",
     },
     {
-      title: "Total Blog Posts",
+      title: "Blog Posts",
       value: stats.blogs,
       icon: FileText,
       color: "bg-orange-500",
+      href: "/admin/blogs",
+      sub: "published",
     },
   ];
 
   return (
     <div className="space-y-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {statCards.map((card, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <Link
+            key={index}
+            href={card.href}
+            className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all block"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500">{card.title}</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{card.value}</p>
+                {card.sub && <p className="text-xs text-gray-400 mt-1">{card.sub}</p>}
               </div>
               <div className={`p-3 rounded-lg ${card.color} bg-opacity-10`}>
                 <card.icon className={`w-6 h-6 ${card.color.replace('bg-', 'text-')}`} />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

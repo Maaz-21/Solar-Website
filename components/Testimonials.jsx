@@ -114,7 +114,7 @@ export default function Testimonials() {
                 </div>
 
                 <blockquote className="text-xl md:text-2xl text-gray-800 font-medium leading-relaxed mb-8">
-                  "{testimonials[currentIndex].message}"
+                  &ldquo;{testimonials[currentIndex].message}&rdquo;
                 </blockquote>
 
                 <div>

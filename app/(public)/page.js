@@ -9,17 +9,19 @@ import ProjectsPreview from "@/components/Projects";
 import SolutionsSummary from "@/components/Solutions";
 import FinalCTA from "@/components/FinalCTA";
 import Testimonials from "@/components/Testimonials";
+import DesignStudioShowcase from "@/components/DesignStudioShowcase";
 
 export default function Home() {
   return (
     <>
       <Navbar />
       <Hero />
+      <DesignStudioShowcase />
       <SolutionsSummary />
-      <Contact />
       <WhySolar />
       <Testimonials />
       <ProjectsPreview />
+      <Contact />
       <Blog />
       <FAQs />
       <FinalCTA />

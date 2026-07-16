@@ -31,7 +31,7 @@ function ContactHero() {
         >
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Get in Touch</h1>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Have questions about solar? Ready to start your journey? We're here to help you every step of the way.
+            Have questions about solar? Ready to start your journey? We&apos;re here to help you every step of the way.
           </p>
         </motion.div>
       </div>
@@ -143,7 +143,7 @@ function ContactContent() {
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-dark mb-2">Send us a message</h2>
-                <p className="text-gray-600 mb-8">Fill out the form below and we'll get back to you shortly.</p>
+                <p className="text-gray-600 mb-8">Fill out the form below and we&apos;ll get back to you shortly.</p>
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <InputGroup label="Full Name" placeholder="John Doe" name="name" value={formData.name} onChange={handleChange} required />

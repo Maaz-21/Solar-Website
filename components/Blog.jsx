@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, ArrowRight } from "lucide-react";
@@ -51,12 +53,12 @@ export default function Blog() {
             </p>
           </div>
           
-          <a
+          <Link
             href="/blog"
             className="hidden md:inline-flex items-center text-primary font-semibold hover:text-green-700 transition-colors group"
           >
             View all articles <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
 
         {/* Articles */}
@@ -105,12 +107,12 @@ export default function Blog() {
 
         {/* Mobile CTA */}
         <div className="mt-10 md:hidden text-center">
-          <a
+          <Link
             href="/blog"
             className="inline-flex items-center text-primary font-medium"
           >
             View all articles →
-          </a>
+          </Link>
         </div>
 
       </div>

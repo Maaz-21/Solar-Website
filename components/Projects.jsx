@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -78,9 +80,9 @@ export default function ProjectsPreview() {
           transition={{ delay: 0.4 }}
           className="mt-10"
         >
-          <a href="/projects" className="link-arrow group">
+          <Link href="/projects" className="link-arrow group">
             View all installations <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

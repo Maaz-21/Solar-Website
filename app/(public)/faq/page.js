@@ -170,7 +170,7 @@ function FAQContact() {
       <div className="max-w-4xl mx-auto px-6 text-center">
         <h2 className="text-2xl font-bold text-dark mb-4">Still have questions?</h2>
         <p className="text-gray-600 mb-8">
-          Can't find the answer you're looking for? Our team is here to help.
+          Can&apos;t find the answer you&apos;re looking for? Our team is here to help.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link 
