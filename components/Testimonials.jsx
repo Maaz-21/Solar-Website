@@ -105,8 +105,9 @@ export default function Testimonials({ testimonials = [] }) {
                   <div className="font-bold text-lg text-gray-900">
                     {testimonials[currentIndex].name}
                   </div>
+                  {/* green-700: green-600 on white fails WCAG AA contrast */}
                   {testimonials[currentIndex].designation && (
-                    <div className="text-green-600 font-medium">
+                    <div className="text-green-700 font-medium">
                       {testimonials[currentIndex].designation}
                     </div>
                   )}

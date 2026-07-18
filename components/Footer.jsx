@@ -16,24 +16,25 @@ export default function Footer() {
                 className="w-12 h-12 object-contain"
               />
 
-              <h1 className="text-2xl font-bold text-white">
+              {/* Not a heading — the page's h1 is the hero title. */}
+              <span className="text-2xl font-bold text-white">
                 SolarOwl
-              </h1>
+              </span>
             </div>
           </div>
           <p className="text-sm text-gray-400 leading-relaxed mb-6">
             Powering a sustainable future with reliable solar solutions for homes and businesses across India.
           </p>
           <div className="flex gap-4">
-            <SocialIcon icon={Facebook} />
-            <SocialIcon icon={Twitter} />
-            <SocialIcon icon={Instagram} />
-            <SocialIcon icon={Linkedin} />
+            <SocialIcon icon={Facebook} label="SolarOwl on Facebook" />
+            <SocialIcon icon={Twitter} label="SolarOwl on Twitter" />
+            <SocialIcon icon={Instagram} label="SolarOwl on Instagram" />
+            <SocialIcon icon={Linkedin} label="SolarOwl on LinkedIn" />
           </div>
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-5">Quick Links</h4>
+          <h3 className="text-white font-semibold mb-5">Quick Links</h3>
           <ul className="space-y-3 text-sm">
             <FooterLink href="/about">About Us</FooterLink>
             <FooterLink href="/solutions">Solutions</FooterLink>
@@ -44,7 +45,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-5">Tools & Services</h4>
+          <h3 className="text-white font-semibold mb-5">Tools & Services</h3>
           <ul className="space-y-3 text-sm">
             <li>
               <Link href="/solar-design" className="inline-flex items-center gap-2 text-secondary font-semibold hover:text-yellow-300 transition-colors">
@@ -59,7 +60,7 @@ export default function Footer() {
         </div>
 
         <div className="lg:col-span-2">
-          <h4 className="text-white font-semibold mb-5">Contact</h4>
+          <h3 className="text-white font-semibold mb-5">Contact</h3>
           <ul className="space-y-4 text-sm">
             <li className="flex items-start gap-2">
               <MapPin className="w-5 h-5 text-primary shrink-0 mt-1" />
@@ -84,7 +85,8 @@ export default function Footer() {
 
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+      {/* gray-400, not gray-500 — 500 fails WCAG AA contrast on this navy. */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
         <div>
           © {new Date().getFullYear()} SOLAROWL ENERGY SOLUTIONS PRIVATE LIMITED. All rights reserved.
         </div>
@@ -108,9 +110,9 @@ function FooterLink({ href = "#", children }) {
   );
 }
 
-function SocialIcon({ icon: Icon }) {
+function SocialIcon({ icon: Icon, label }) {
   return (
-    <a href="#" className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300">
+    <a href="#" aria-label={label} className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary hover:text-white transition-all duration-300">
       <Icon className="w-4 h-4" />
     </a>
   );

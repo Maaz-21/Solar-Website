@@ -178,7 +178,7 @@ function Step({ number, title, desc }) {
         {number}
       </div>
       <div>
-        <h4 className="font-bold text-dark text-lg mb-1">{title}</h4>
+        <h3 className="font-bold text-dark text-lg mb-1">{title}</h3>
         <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
       </div>
     </div>

@@ -51,7 +51,7 @@ function AboutHero() {
             className="relative h-[400px] lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl shadow-green-900/10"
           >
             <Image
-              src="/installation-1.jpg" 
+              src="/installation-1.webp"
               alt="Team installing solar panels"
               fill
               className="object-cover"

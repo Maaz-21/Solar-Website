@@ -86,6 +86,7 @@ export default function Chatbot() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Open chat assistant"
         className={`fixed bottom-6 right-6 z-50 p-4 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-all ${
           isOpen ? "hidden" : "block"
         }`}
@@ -113,6 +114,7 @@ export default function Chatbot() {
                   setIsOpen(false);
                   setShowCta(false);  // ✅ Reset CTA when closing
                 }}
+                aria-label="Close chat"
                 className="hover:bg-orange-600 p-1 rounded transition-colors"
               >
                 <X size={20} />
@@ -178,6 +180,7 @@ export default function Chatbot() {
                 />
                 <button
                   onClick={handleSend}
+                  aria-label="Send message"
                   disabled={!input.trim()}
                   className="p-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

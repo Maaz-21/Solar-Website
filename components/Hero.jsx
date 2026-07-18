@@ -13,12 +13,12 @@ const slides = [
     subtitle: "End-to-end solar installation with zero middlemen.",
   },
   {
-    image: "/installation-1.jpg",
+    image: "/installation-1.webp",
     title: "Power Your Home with Clean Energy",
     subtitle: "Reliable solar solutions for modern homes.",
   },
   {
-    image: "/installation-3.jpg",
+    image: "/installation-3.webp",
     title: "Solar That Pays for Itself",
     subtitle: "Lower bills. Higher savings. Sustainable future.",
   },
@@ -51,12 +51,9 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-          {/* Left Text Content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="max-w-2xl"
-          >
+          {/* Left Text Content — entrance runs via CSS (transform-only) so the
+              LCP heading is visible in the server HTML before hydration. */}
+          <div className="max-w-2xl hero-enter-text">
             <div className="hero-badge">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -65,7 +62,9 @@ export default function Hero() {
               #1 Solar Installer in Your Region
             </div>
 
-            <AnimatePresence mode="wait">
+            {/* initial={false}: the first slide renders visible in server HTML;
+                only the 7s slide *changes* animate. */}
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={active}
                 initial={{ opacity: 0, y: 12 }}
@@ -104,15 +103,11 @@ export default function Hero() {
                 </motion.div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
-          {/* Right Image Panel — stacked slides crossfade instead of hard swap */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="hero-image-wrapper"
-          >
+          {/* Right Image Panel — stacked slides crossfade instead of hard swap.
+              CSS entrance (scale only) keeps the LCP image paintable pre-hydration. */}
+          <div className="hero-image-wrapper hero-enter-image">
             {slides.map((slide, index) => (
               <Image
                 key={slide.image}
@@ -120,6 +115,7 @@ export default function Hero() {
                 alt={slide.title}
                 fill
                 priority={index === 0}
+                quality={60}
                 sizes="(max-width: 1023px) 100vw, 50vw"
                 className={`object-cover transition-opacity duration-1000 ${
                   active === index ? "opacity-100" : "opacity-0"
@@ -145,7 +141,7 @@ export default function Hero() {
                 />
               ))}
             </div>
-          </motion.div>
+          </div>
 
         </div>
       </div>

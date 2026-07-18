@@ -66,7 +66,7 @@ function SolutionsList() {
       title: "Commercial & Industrial Solar",
       desc: "Maximize profitability by cutting operational costs. Ideal for factories, offices, schools, and hospitals with high daytime consumption.",
       icon: Building2,
-      image: "/Commercial.jpg",
+      image: "/Commercial.webp",
       benefits: [
         "Accelerated depreciation benefits (Tax savings)",
         "ROI typically within 3-4 years",

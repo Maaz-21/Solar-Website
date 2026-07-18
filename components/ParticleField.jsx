@@ -12,6 +12,15 @@
  * Subtlety contract: pointer-events none, low alphas tuned for the site's
  * light backgrounds, DPR capped, paused on hidden tabs, and fully disabled
  * under prefers-reduced-motion.
+ *
+ * Performance contract: the whole effect (init + loop + listeners) starts
+ * only after window load + an idle slot, so it never competes with
+ * hydration for the main thread. On coarse-pointer / small screens it runs
+ * in "lite" mode: the glow and rays are pre-rendered once to an offscreen
+ * canvas (per-frame gradient building is the expensive part), DPR is 1,
+ * the loop is throttled to ~30fps, fewer motes spawn, and no pointer
+ * listeners are attached (there is no cursor to react to). Desktop keeps
+ * the full effect.
  */
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
@@ -20,6 +29,9 @@ const GOLD = { r: 246, g: 196, b: 69 };
 const GREEN = { r: 53, g: 217, b: 154 };
 
 const RAY_COUNT = 5;
+const LITE_RAY_COUNT = 3;
+const LITE_PARTICLE_CAP = 40;
+const LITE_FRAME_MIN_MS = 33; // ~30fps
 const CURSOR_DIST = 130;
 const CURSOR_PUSH = 0.09; // gentle deflection away from the cursor — a hindrance, not a magnet
 const RAY_HOP_CHANCE = 0.03; // per-frame chance a strongly disturbed particle changes ray
@@ -43,11 +55,11 @@ function useMotionAllowed() {
   );
 }
 
-function makeRays() {
+function makeRays(count) {
   // Angles point from the top-right source into the page (canvas coords:
   // +x right, +y down), fanned between "down" and "down-left/left".
-  return Array.from({ length: RAY_COUNT }, (_, i) => {
-    const t = i / (RAY_COUNT - 1);
+  return Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1);
     return {
       baseAngle: 1.88 + t * 1.0, // ~108° … ~165°
       swayAmp: 0.025 + Math.random() * 0.03,
@@ -113,18 +125,76 @@ export default function ParticleField() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
+    // Lite mode: no cursor to react to, and phone GPUs/CPUs shouldn't pay
+    // for full-screen gradient rebuilds every frame.
+    const lite =
+      window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768;
+
     let width = window.innerWidth;
     let height = window.innerHeight;
     let raf = null;
     let running = true;
+    let started = false;
 
     const source = { x: 0, y: 0 };
-    const rays = makeRays();
+    const rays = makeRays(lite ? LITE_RAY_COUNT : RAY_COUNT);
     let rayLength = 0;
     let particles = [];
+    let background = null; // lite mode: glow + rays cached here, drawn once
+    let lastFrameTime = 0;
     const pointer = { x: -9999, y: -9999, active: false };
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    const dpr = lite ? 1 : Math.min(window.devicePixelRatio || 1, 1.75);
     const sprites = { gold: makeParticleSprite(GOLD), green: makeParticleSprite(GREEN) };
+
+    const drawSourceGlow = (g, time) => {
+      const pulse = 1 + Math.sin(time * 0.0006) * 0.07;
+      const radius = Math.min(width, height) * 0.55 * pulse;
+      const glow = g.createRadialGradient(
+        source.x, source.y, 0,
+        source.x, source.y, radius
+      );
+      glow.addColorStop(0, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},0.16)`);
+      glow.addColorStop(0.4, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},0.06)`);
+      glow.addColorStop(1, "rgba(246,196,69,0)");
+      g.fillStyle = glow;
+      g.fillRect(0, 0, width, height);
+    };
+
+    const drawRay = (g, ray, time) => {
+      ray.angle = ray.baseAngle + Math.sin(time * ray.swaySpeed + ray.phase) * ray.swayAmp;
+      const breathe = 0.75 + Math.sin(time * ray.swaySpeed * 1.7 + ray.phase) * 0.25;
+
+      g.save();
+      g.translate(source.x, source.y);
+      g.rotate(ray.angle);
+
+      // Trapezoid beam widening away from the source, fading along its length.
+      const grad = g.createLinearGradient(0, 0, rayLength, 0);
+      grad.addColorStop(0, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},${ray.alpha * breathe})`);
+      grad.addColorStop(0.55, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},${ray.alpha * 0.45 * breathe})`);
+      grad.addColorStop(1, "rgba(246,196,69,0)");
+
+      g.beginPath();
+      g.moveTo(0, -8);
+      g.lineTo(rayLength, -ray.halfWidthEnd);
+      g.lineTo(rayLength, ray.halfWidthEnd);
+      g.lineTo(0, 8);
+      g.closePath();
+      g.fillStyle = grad;
+      g.fill();
+      g.restore();
+    };
+
+    // Lite mode: glow + rays are static — render them once per layout into
+    // an offscreen canvas so the frame loop is just one drawImage + motes.
+    const renderBackground = () => {
+      background = document.createElement("canvas");
+      background.width = width;
+      background.height = height;
+      const bctx = background.getContext("2d");
+      drawSourceGlow(bctx, 0);
+      for (const ray of rays) drawRay(bctx, ray, 0); // also fixes ray.angle for steering
+    };
 
     const layout = () => {
       width = window.innerWidth;
@@ -139,12 +209,16 @@ export default function ParticleField() {
       source.y = -height * 0.04;
       rayLength = Math.hypot(width, height) * 1.15;
 
-      const count = Math.min(Math.round((width * height) / 17000), 140);
+      const count = Math.min(
+        Math.round((width * height) / 17000),
+        lite ? LITE_PARTICLE_CAP : 140
+      );
       particles = Array.from({ length: count }, () =>
         spawnParticle(source, rays, rayLength, 1) // initial fill along full rays
       );
+
+      if (lite) renderBackground();
     };
-    layout();
 
     const onPointerMove = (e) => {
       pointer.x = e.clientX;
@@ -165,51 +239,24 @@ export default function ParticleField() {
       }
     };
 
-    const drawSourceGlow = (time) => {
-      const pulse = 1 + Math.sin(time * 0.0006) * 0.07;
-      const radius = Math.min(width, height) * 0.55 * pulse;
-      const glow = ctx.createRadialGradient(
-        source.x, source.y, 0,
-        source.x, source.y, radius
-      );
-      glow.addColorStop(0, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},0.16)`);
-      glow.addColorStop(0.4, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},0.06)`);
-      glow.addColorStop(1, "rgba(246,196,69,0)");
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, width, height);
-    };
-
-    const drawRay = (ray, time) => {
-      ray.angle = ray.baseAngle + Math.sin(time * ray.swaySpeed + ray.phase) * ray.swayAmp;
-      const breathe = 0.75 + Math.sin(time * ray.swaySpeed * 1.7 + ray.phase) * 0.25;
-
-      ctx.save();
-      ctx.translate(source.x, source.y);
-      ctx.rotate(ray.angle);
-
-      // Trapezoid beam widening away from the source, fading along its length.
-      const grad = ctx.createLinearGradient(0, 0, rayLength, 0);
-      grad.addColorStop(0, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},${ray.alpha * breathe})`);
-      grad.addColorStop(0.55, `rgba(${GOLD.r},${GOLD.g},${GOLD.b},${ray.alpha * 0.45 * breathe})`);
-      grad.addColorStop(1, "rgba(246,196,69,0)");
-
-      ctx.beginPath();
-      ctx.moveTo(0, -8);
-      ctx.lineTo(rayLength, -ray.halfWidthEnd);
-      ctx.lineTo(rayLength, ray.halfWidthEnd);
-      ctx.lineTo(0, 8);
-      ctx.closePath();
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.restore();
-    };
-
     const step = (time) => {
       if (!running) return;
+
+      // Lite mode runs at ~30fps — imperceptible for slow dust, halves the cost.
+      if (lite && time - lastFrameTime < LITE_FRAME_MIN_MS) {
+        raf = requestAnimationFrame(step);
+        return;
+      }
+      lastFrameTime = time;
+
       ctx.clearRect(0, 0, width, height);
 
-      drawSourceGlow(time);
-      for (const ray of rays) drawRay(ray, time);
+      if (lite) {
+        ctx.drawImage(background, 0, 0, width, height);
+      } else {
+        drawSourceGlow(ctx, time);
+        for (const ray of rays) drawRay(ctx, ray, time);
+      }
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -272,6 +319,7 @@ export default function ParticleField() {
 
     const onVisibility = () => {
       running = !document.hidden;
+      if (!started) return;
       if (running) raf = requestAnimationFrame(step);
       else if (raf) cancelAnimationFrame(raf);
     };
@@ -285,18 +333,44 @@ export default function ParticleField() {
       resizeTimer = setTimeout(layout, 150);
     };
 
-    window.addEventListener("resize", onResize);
-    window.addEventListener("mousemove", onPointerMove, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    document.documentElement.addEventListener("mouseleave", onPointerLeave);
-    document.addEventListener("visibilitychange", onVisibility);
+    // Nothing — no layout, no listeners, no loop — happens until the page
+    // has loaded AND the main thread is idle, so the effect never competes
+    // with hydration or the LCP render.
+    let idleId = null;
+    let idleTimer = null;
+    const start = () => {
+      if (started || !running) return;
+      started = true;
+      layout();
+      canvas.style.opacity = "1"; // fade in — the delayed start shouldn't pop
+      window.addEventListener("resize", onResize);
+      if (!lite) {
+        window.addEventListener("mousemove", onPointerMove, { passive: true });
+        window.addEventListener("touchmove", onTouchMove, { passive: true });
+        document.documentElement.addEventListener("mouseleave", onPointerLeave);
+      }
+      raf = requestAnimationFrame(step);
+    };
+    const scheduleStart = () => {
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(start, { timeout: 2500 });
+      } else {
+        idleTimer = setTimeout(start, 1500);
+      }
+    };
+    const onLoad = () => scheduleStart();
 
-    raf = requestAnimationFrame(step);
+    document.addEventListener("visibilitychange", onVisibility);
+    if (document.readyState === "complete") scheduleStart();
+    else window.addEventListener("load", onLoad, { once: true });
 
     return () => {
       running = false;
       if (raf) cancelAnimationFrame(raf);
+      if (idleId !== null && "cancelIdleCallback" in window) window.cancelIdleCallback(idleId);
+      clearTimeout(idleTimer);
       clearTimeout(resizeTimer);
+      window.removeEventListener("load", onLoad);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onPointerMove);
       window.removeEventListener("touchmove", onTouchMove);
@@ -316,7 +390,9 @@ export default function ParticleField() {
         inset: 0,
         zIndex: 30,
         pointerEvents: "none",
+        opacity: 0, // set to 1 when the idle-deferred loop starts
+        transition: "opacity 1.2s ease",
       }}
     />
   );
-} 
+}

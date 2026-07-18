@@ -48,7 +48,10 @@ export default function SolutionsSummary() {
               <p className="text-sm text-gray-600 mb-6 leading-relaxed">{s.desc}</p>
               
               <Link href="/solutions" className="link-arrow">
-                Learn more <ArrowRight className="ml-1 w-3 h-3 transition-transform group-hover:translate-x-1" />
+                {/* sr-only suffix gives each card's link distinct, descriptive
+                    text for screen readers and the SEO link-text audit. */}
+                Learn more<span className="sr-only"> about {s.title}</span>{" "}
+                <ArrowRight className="ml-1 w-3 h-3 transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>
           ))}

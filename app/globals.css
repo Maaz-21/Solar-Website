@@ -344,8 +344,10 @@ body {
     @apply bg-white/60 backdrop-blur-sm border border-white/50 p-4 rounded-xl shadow-sm hover:shadow-md transition-all; 
   }
   
-  .carousel-dot { 
-    @apply h-2 w-2 rounded-full transition-all duration-300 bg-white/50 hover:bg-white/80; 
+  /* Transparent border + bg-clip-padding: the visual dot stays 8px but the
+     tap target becomes 24px — the WCAG/Lighthouse minimum for touch. */
+  .carousel-dot {
+    @apply h-2 w-2 rounded-full transition-all duration-300 bg-white/50 hover:bg-white/80 box-content border-8 border-transparent bg-clip-padding;
   }
   
   .carousel-dot-active { 
@@ -395,6 +397,24 @@ body {
    SOLAR MOTION & DESIGN SYSTEM — shimmer CTAs, animated sun,
    floating orbs, Design-Studio showcase, shared section accents
    ═══════════════════════════════════════════════════════════════ */
+
+/* ── Hero entrance ──
+   Transform-only, applied via CSS so the server-rendered hero (the LCP
+   element) is visible from the very first paint. An opacity entrance here
+   would keep the hero invisible until hydration finishes (~2s on mobile). */
+@keyframes hero-rise {
+  from { transform: translateY(20px); }
+  to { transform: translateY(0); }
+}
+@keyframes hero-settle {
+  from { transform: scale(0.96); }
+  to { transform: scale(1); }
+}
+.hero-enter-text { animation: hero-rise 0.6s ease-out both; }
+.hero-enter-image { animation: hero-settle 0.7s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter-text, .hero-enter-image { animation: none; }
+}
 
 @keyframes sun-rays-spin {
   from { transform: rotate(0deg); }

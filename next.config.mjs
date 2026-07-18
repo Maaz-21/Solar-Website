@@ -14,8 +14,10 @@ const nextConfig = {
         hostname: 'res.cloudinary.com',
       },
     ],
-    // optional, but common:
-    // formats: ['image/avif', 'image/webp'],
+    // AVIF first (≈20-30% smaller than WebP), WebP fallback.
+    formats: ['image/avif', 'image/webp'],
+    // Qualities used by <Image quality={...}> must be declared here.
+    qualities: [60, 75],
   },
   /* config options here */
   reactCompiler: true,

@@ -12,7 +12,9 @@ const FALLBACK_IMAGE =
 export default function Blog({ posts: rawPosts = [] }) {
   const posts = rawPosts.slice(0, 3).map((post) => ({
     title: post.title,
-    date: new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    // timeZone pinned so the server (UTC) and the visitor's browser (IST etc.)
+    // format the same string — a mismatch here breaks hydration for the whole page.
+    date: new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }),
     image: post.image || FALLBACK_IMAGE,
     slug: `/blog/${post.slug}`,
     category: post.category,

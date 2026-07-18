@@ -22,16 +22,18 @@ export default async function Home() {
   return (
     <>
       <Navbar />
-      <Hero />
-      <DesignStudioShowcase />
-      <SolutionsSummary />
-      <WhySolar />
-      <Testimonials testimonials={testimonials} />
-      <ProjectsPreview projects={projects} />
-      <Contact />
-      <Blog posts={posts} />
-      <FAQs />
-      <FinalCTA />
+      <main>
+        <Hero />
+        <DesignStudioShowcase />
+        <SolutionsSummary />
+        <WhySolar />
+        <Testimonials testimonials={testimonials} />
+        <ProjectsPreview projects={projects} />
+        <Contact />
+        <Blog posts={posts} />
+        <FAQs />
+        <FinalCTA />
+      </main>
       <Footer />
     </>
   );

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Menu, X, Globe, Sparkles } from "lucide-react";
 import Image from "next/image";
+import { loadGoogleTranslate, waitForTranslateCombo } from "@/lib/googleTranslate";
 
 const navLinks = [
   { href: "/solutions", label: "Solutions" },
@@ -81,12 +82,19 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState("en");
 
-  const changeLanguage = (lang) => {
+  const changeLanguage = async (lang) => {
     setCurrentLang(lang);
-    const select = document.querySelector(".goog-te-combo");
-    if (select) {
-      select.value = lang;
-      select.dispatchEvent(new Event("change"));
+    try {
+      // The widget only loads on first use — it's too heavy (and too
+      // cookie-happy) to ship to every visitor who never switches language.
+      await loadGoogleTranslate();
+      const select = await waitForTranslateCombo();
+      if (select && select.value !== lang) {
+        select.value = lang;
+        select.dispatchEvent(new Event("change"));
+      }
+    } catch {
+      // Script blocked or offline — leave the page in English.
     }
   };
 

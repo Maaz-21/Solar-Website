@@ -5,7 +5,9 @@
       "Bash(git mv *)",
       "Bash(sed -i 's/export default function middleware\\(request\\)/export default function proxy\\(request\\)/' proxy.js)",
       "Bash(echo \"EXIT: $?\")",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Bash(node -e \"const sharp = require\\('sharp'\\); console.log\\('sharp', sharp.versions ? 'available' : 'loaded'\\);\")",
+      "Bash(node -e ' *)"
     ]
   }
 }
