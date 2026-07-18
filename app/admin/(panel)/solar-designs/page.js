@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import {
   Search, Loader2, AlertCircle, Eye, X, Sun, MapPin, ExternalLink, Trash2,
 } from "lucide-react";
+import { toast } from "@/components/Toaster";
 
 const fmtDate = (d) =>
   new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -70,7 +71,7 @@ export default function SolarDesignsPage() {
       if (data.success) setSelected(data.project);
       else throw new Error(data.error);
     } catch (err) {
-      alert("Failed to load design: " + err.message);
+      toast.error("Failed to load design: " + err.message);
       setSelected(null);
     } finally {
       setDetailLoading(false);
@@ -90,24 +91,28 @@ export default function SolarDesignsPage() {
         setDesigns(designs.map((d) => (d._id === id ? { ...d, status } : d)));
       }
     } catch (err) {
-      alert("Failed to update: " + err.message);
+      toast.error("Failed to update: " + err.message);
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Delete this design permanently?")) return;
-    try {
-      const res = await fetch(`/api/solar-design/projects/${id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) {
-        setDesigns(designs.filter((d) => d._id !== id));
-        setSelected(null);
-      }
-    } catch (err) {
-      alert("Failed to delete: " + err.message);
-    }
+  const handleDelete = (id) => {
+    toast.confirm("Delete this design permanently?", {
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/solar-design/projects/${id}`, { method: "DELETE" });
+          const data = await res.json();
+          if (data.success) {
+            setDesigns((prev) => prev.filter((d) => d._id !== id));
+            setSelected(null);
+          }
+        } catch (err) {
+          toast.error("Failed to delete: " + err.message);
+        }
+      },
+    });
   };
 
   const filtered = designs.filter(

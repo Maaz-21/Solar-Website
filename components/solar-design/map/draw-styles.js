@@ -52,7 +52,7 @@ export const DRAW_STYLES = [
     type: "circle",
     filter: ["all", ["==", "$type", "Point"], ["==", "meta", "midpoint"]],
     paint: {
-      "circle-radius": 3.5,
+      "circle-radius": 5,
       "circle-color": "#e2e8f0",
       "circle-opacity": 0.85,
       "circle-stroke-color": VERTEX_STROKE,
@@ -63,14 +63,14 @@ export const DRAW_STYLES = [
     id: "gl-draw-vertex-halo-active",
     type: "circle",
     filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"]],
-    paint: { "circle-radius": 8, "circle-color": "#0c4a6e", "circle-opacity": 0.4 },
+    paint: { "circle-radius": 10, "circle-color": "#0c4a6e", "circle-opacity": 0.4 },
   },
   {
     id: "gl-draw-vertex-active",
     type: "circle",
     filter: ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"]],
     paint: {
-      "circle-radius": 5,
+      "circle-radius": 6,
       "circle-color": "#ffffff",
       "circle-stroke-color": VERTEX_STROKE,
       "circle-stroke-width": 2,

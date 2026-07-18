@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import BillRange from "@/components/Contact";
+import { toast } from "@/components/Toaster";
 
 export default function ContactPage() {
   return (
@@ -71,11 +72,11 @@ function ContactContent() {
         setFormData({ name: "", phone: "", email: "", city: "", pincode: "", billRange: "", message: "" });
       } else {
         setStatus("error");
-        alert("Failed to send message: " + (data.error || "Unknown error"));
+        toast.error("Failed to send message: " + (data.error || "Unknown error"));
       }
     } catch (error) {
       setStatus("error");
-      alert("Something went wrong.");
+      toast.error("Something went wrong.");
     }
   };
 

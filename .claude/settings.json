@@ -3,7 +3,9 @@
     "allow": [
       "Bash(python -)",
       "Bash(git mv *)",
-      "Bash(sed -i 's/export default function middleware\\(request\\)/export default function proxy\\(request\\)/' proxy.js)"
+      "Bash(sed -i 's/export default function middleware\\(request\\)/export default function proxy\\(request\\)/' proxy.js)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(npm test *)"
     ]
   }
 }

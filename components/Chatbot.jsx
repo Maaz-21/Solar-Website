@@ -34,10 +34,12 @@ export default function Chatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Fetch FAQs only when the chat is first opened — most visitors never
+  // open it, so no page should pay for this request up front.
   useEffect(() => {
-    fetchFaqs();
+    if (isOpen && faqs.length === 0) fetchFaqs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     scrollToBottom();

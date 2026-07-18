@@ -12,13 +12,16 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, error: "Invalid Project ID" }, { status: 400 });
     }
 
-    const project = await Project.findById(id);
+    const project = await Project.findById(id).lean();
 
     if (!project) {
       return NextResponse.json({ success: false, error: "Project not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: project });
+    return NextResponse.json(
+      { success: true, data: project },
+      { headers: { "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600" } }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

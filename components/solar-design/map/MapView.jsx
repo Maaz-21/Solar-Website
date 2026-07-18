@@ -128,6 +128,8 @@ export default function MapView() {
       styles: DRAW_STYLES,
       modes: { ...MapboxDraw.modes, measured_polygon: MeasuredPolygonMode },
       userProperties: true,
+      clickBuffer: 4,
+      touchBuffer: 40, // generous hit area so vertices are grabbable on phones
     });
     drawRef.current = draw;
     map.addControl(draw);

@@ -1,31 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote, ChevronLeft, ChevronRight, User } from "lucide-react";
 
-export default function Testimonials() {
-  const [testimonials, setTestimonials] = useState([]);
+export default function Testimonials({ testimonials = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const res = await fetch("/api/testimonials");
-        const data = await res.json();
-        if (data.success) {
-          setTestimonials(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching testimonials:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTestimonials();
-  }, []);
 
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -35,7 +15,7 @@ export default function Testimonials() {
     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  if (loading || testimonials.length === 0) {
+  if (testimonials.length === 0) {
     return null; // Don't show section if no data
   }
 
@@ -91,6 +71,10 @@ export default function Testimonials() {
                     <img
                       src={testimonials[currentIndex].photo}
                       alt={testimonials[currentIndex].name}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      decoding="async"
                       className="w-20 h-20 rounded-full object-cover border-4 border-green-50 shadow-md"
                     />
                   ) : (

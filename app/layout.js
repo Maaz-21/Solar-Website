@@ -1,5 +1,6 @@
 import "./globals.css";
 import { GoogleTagManager } from "@next/third-parties/google";
+import Toaster from "@/components/Toaster";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://solar-website-plum.vercel.app";
 
@@ -63,6 +64,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         {children}
+        <Toaster />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}

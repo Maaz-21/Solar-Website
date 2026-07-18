@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { toast } from "@/components/Toaster";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -35,11 +36,11 @@ export default function Contact() {
         setFormData({ name: "", phone: "", email: "", city: "", pincode: "", billRange: "", message: "" });
       } else {
         setStatus("error");
-        alert("Failed to submit enquiry: " + (data.error || "Unknown error"));
+        toast.error("Failed to submit enquiry: " + (data.error || "Unknown error"));
       }
     } catch (error) {
       setStatus("error");
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     }
   };
 
@@ -123,7 +124,7 @@ export default function Contact() {
 
                 {/* Location */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Pin code" required placeholder="411001" name="pincode" value={formData.pincode} onChange={handleChange} />
+                  <Input label="Pin code (optional)" placeholder="411001" name="pincode" value={formData.pincode} onChange={handleChange} />
                   <Input label="City" placeholder="Pune" name="city" value={formData.city} onChange={handleChange} />
                 </div>
 

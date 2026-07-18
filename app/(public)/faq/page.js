@@ -183,7 +183,7 @@ function FAQContact() {
             href="tel:+919876543210" 
             className="inline-flex items-center justify-center gap-2 border border-gray-200 text-dark px-6 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors"
           >
-            <Phone className="w-4 h-4" /> +91 98765 43210
+            <Phone className="w-4 h-4" /> +91 9422980148/ 7020660967
           </a>
         </div>
       </div>

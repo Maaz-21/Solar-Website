@@ -10,6 +10,7 @@ import { useState } from "react";
 import {
   FileText, Send, CheckCircle, AlertCircle, Printer, RotateCcw, Loader2, ArrowLeft, Lock, Paperclip,
 } from "lucide-react";
+import { toast } from "@/components/Toaster";
 import { useDesignStore, activeSystemKW } from "../store/useDesignStore";
 
 const fmtINR = (val) =>
@@ -330,7 +331,12 @@ export default function Step8_Proposal() {
           </button>
           <button
             className="sd-btn sd-btn-ghost sd-btn-full"
-            onClick={() => { if (confirm("Start a new design? The current draft will be cleared.")) reset(); }}
+            onClick={() =>
+              toast.confirm("Start a new design? The current draft will be cleared.", {
+                confirmLabel: "Start new",
+                onConfirm: reset,
+              })
+            }
           >
             <RotateCcw size={14} /> Start New Design
           </button>

@@ -1171,7 +1171,7 @@
     flex-direction: column;
   }
   .sd-map-panel {
-    flex: 0 0 42dvh;
+    flex: 0 0 45dvh;
     min-height: 0;
   }
   .sd-step-panel {
@@ -1184,8 +1184,24 @@
   :root { --sd-panel-width: 100%; }
   .sd-wizard-title-text { display: none; }
   .sd-wizard-header { padding: 10px 14px; }
-  .sd-stepper { padding: 0 6px; }
+  .sd-stepper {
+    padding: 0 6px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sd-stepper::-webkit-scrollbar { display: none; }
   .sd-stepper-connector { width: 10px; }
+}
+
+/* Touch devices: comfortable tap targets everywhere in the wizard. */
+@media (pointer: coarse) {
+  .sd-btn { min-height: 44px; }
+  .sd-btn-sm { min-height: 38px; }
+  .sd-chip-option { min-height: 40px; }
+  .sd-search-result { padding-top: 12px; padding-bottom: 12px; }
+  .sd-check { padding: 12px; }
+  .sd-stepper-node { min-width: 34px; min-height: 34px; }
 }
 
 /* ─── Mapbox Overrides ───────────────────────────────────────── */

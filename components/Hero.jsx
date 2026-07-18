@@ -120,6 +120,7 @@ export default function Hero() {
                 alt={slide.title}
                 fill
                 priority={index === 0}
+                sizes="(max-width: 1023px) 100vw, 50vw"
                 className={`object-cover transition-opacity duration-1000 ${
                   active === index ? "opacity-100" : "opacity-0"
                 }`}

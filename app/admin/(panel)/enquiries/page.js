@@ -5,6 +5,7 @@ import {
   Search, Loader2, AlertCircle, Filter, Eye, X, Download, Mail,
   MessageCircle, Send, Sun, MapPin, Zap, Home, IndianRupee, ExternalLink,
 } from "lucide-react";
+import { toast } from "@/components/Toaster";
 
 const fmtDate = (d) =>
   new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -92,14 +93,14 @@ export default function EnquiriesPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert("Reply sent successfully!");
+        toast.success("Reply sent successfully!");
         setReplyModalOpen(false);
         fetchEnquiries();
       } else {
         throw new Error(data.error || "Failed to send reply");
       }
     } catch (err) {
-      alert("Error: " + err.message);
+      toast.error("Error: " + err.message);
     } finally {
       setSendingReply(false);
     }
@@ -120,7 +121,7 @@ export default function EnquiriesPage() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      alert("Export failed: " + err.message);
+      toast.error("Export failed: " + err.message);
     } finally {
       setExporting(false);
     }
@@ -140,7 +141,7 @@ export default function EnquiriesPage() {
         setEnquiries(enquiries.map((enq) => (enq._id === id ? { ...enq, status: newStatus } : enq)));
       }
     } catch (err) {
-      alert("Failed to update status: " + err.message);
+      toast.error("Failed to update status: " + err.message);
     } finally {
       setUpdatingId(null);
     }

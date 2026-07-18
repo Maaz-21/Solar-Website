@@ -7,6 +7,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, MapPin, Loader2, X, Clock3 } from "lucide-react";
+import { toast } from "@/components/Toaster";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 const RECENT_STORAGE_KEY = "sd-recent-searches";
@@ -148,7 +149,7 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
 
   const handleGPS = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      toast.error("Geolocation is not supported by your browser.");
       return;
     }
     setIsGeolocating(true);
@@ -180,7 +181,7 @@ export default function AddressSearchBar({ onLocationSelect, isDisabled }) {
       },
       () => {
         setIsGeolocating(false);
-        alert("Unable to get your location. Please allow location access.");
+        toast.error("Unable to get your location. Please allow location access.");
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );

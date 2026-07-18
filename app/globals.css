@@ -15,14 +15,135 @@
 }
 
 /* 4. Base element styles */
-html {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* ─── Toasts (components/Toaster.jsx) ─────────────────────────────
+   Top-center stack: full-width minus margins on phones, capped on
+   larger screens. High z-index so it clears the chatbot (z-50), the
+   admin panel and the Design Studio overlays alike. */
+.toaster {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow: 0 10px 30px -8px rgb(15 23 42 / 0.25), 0 2px 8px rgb(15 23 42 / 0.08);
+  animation: toast-in 0.22s cubic-bezier(0.21, 1.02, 0.73, 1);
+}
+.toast--leaving {
+  animation: toast-out 0.18s ease-in forwards;
+}
+
+.toast-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.toast--success .toast-icon { color: #16a34a; }
+.toast--error .toast-icon { color: #dc2626; }
+.toast--info .toast-icon { color: #2563eb; }
+.toast--confirm .toast-icon { color: #d97706; }
+
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-message {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #1e293b;
+  overflow-wrap: anywhere;
+}
+
+.toast-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.toast-btn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: rgb(0 0 0 / 0.05);
+  color: #475569;
+  transition: background-color 0.15s, color 0.15s;
+}
+.toast-btn:hover {
+  background: rgb(0 0 0 / 0.09);
+  color: #1e293b;
+}
+.toast-btn--primary {
+  background: #0f172a;
+  color: #ffffff;
+}
+.toast-btn--primary:hover {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;
+  border-radius: 8px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.toast-close:hover {
+  background: rgb(0 0 0 / 0.05);
+  color: #475569;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-8px) scale(0.97); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+  .toast--leaving { animation: none; opacity: 0; }
 }
 
 @layer utilities {

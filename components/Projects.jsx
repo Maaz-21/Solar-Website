@@ -6,30 +6,15 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-import { useState, useEffect } from "react";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop";
 
-export default function ProjectsPreview() {
-  const [projects, setProjects] = useState([]);
-
-  useEffect(() => {
-    async function fetchProjects() {
-      try {
-        const res = await fetch('/api/projects');
-        const data = await res.json();
-        if (data.success) {
-          const formattedProjects = data.data.slice(0, 3).map(p => ({
-            location: p.location,
-            size: p.capacity + " " + p.type,
-            image: (p.images && p.images.length > 0) ? p.images[0] : "https://images.unsplash.com/photo-1613665813446-82a78c468a1d?q=80&w=2058&auto=format&fit=crop",
-          }));
-          setProjects(formattedProjects);
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects", error);
-      }
-    }
-    fetchProjects();
-  }, []);
+export default function ProjectsPreview({ projects: rawProjects = [] }) {
+  const projects = rawProjects.slice(0, 3).map((p) => ({
+    location: p.location,
+    size: p.capacity + " " + p.type,
+    image: p.images && p.images.length > 0 ? p.images[0] : FALLBACK_IMAGE,
+  }));
 
   return (
     <section className="section bg-yellow-50/50">
@@ -56,11 +41,12 @@ export default function ProjectsPreview() {
               className="group card card-hover-lift"
             >
               <div className="relative h-52 overflow-hidden">
-                <Image 
-                  src={p.image} 
-                  alt={p.location} 
-                  fill 
-                  className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                <Image
+                  src={p.image}
+                  alt={p.location}
+                  fill
+                  sizes="(max-width: 767px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
               </div>

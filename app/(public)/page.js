@@ -10,8 +10,15 @@ import SolutionsSummary from "@/components/Solutions";
 import FinalCTA from "@/components/FinalCTA";
 import Testimonials from "@/components/Testimonials";
 import DesignStudioShowcase from "@/components/DesignStudioShowcase";
+import { getHomepageData } from "@/lib/publicData";
 
-export default function Home() {
+// Rebuild the page with fresh CMS content every 5 minutes (ISR) — visitors
+// always get a fully-rendered static page with no client-side data fetching.
+export const revalidate = 300;
+
+export default async function Home() {
+  const { testimonials, projects, posts } = await getHomepageData();
+
   return (
     <>
       <Navbar />
@@ -19,10 +26,10 @@ export default function Home() {
       <DesignStudioShowcase />
       <SolutionsSummary />
       <WhySolar />
-      <Testimonials />
-      <ProjectsPreview />
+      <Testimonials testimonials={testimonials} />
+      <ProjectsPreview projects={projects} />
       <Contact />
-      <Blog />
+      <Blog posts={posts} />
       <FAQs />
       <FinalCTA />
       <Footer />

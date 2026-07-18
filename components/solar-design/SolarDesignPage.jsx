@@ -13,6 +13,7 @@ import "./solar-design.css";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { RotateCcw, X, LogOut } from "lucide-react";
+import { toast } from "@/components/Toaster";
 import { useDesignStore } from "./store/useDesignStore";
 import MapView from "./map/MapView";
 import WizardStepper from "./WizardStepper";
@@ -82,9 +83,12 @@ export default function SolarDesignPage() {
           {step > 1 && (
             <button
               className="sd-btn sd-btn-ghost sd-btn-sm"
-              onClick={() => {
-                if (confirm("Start a new design? The current draft will be cleared.")) reset();
-              }}
+              onClick={() =>
+                toast.confirm("Start a new design? The current draft will be cleared.", {
+                  confirmLabel: "Start new",
+                  onConfirm: reset,
+                })
+              }
             >
               <RotateCcw size={13} /> New
             </button>

@@ -230,8 +230,8 @@ function Scene() {
         position={sunDir}
         intensity={1.6}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-left={-40}
         shadow-camera-right={40}
         shadow-camera-top={40}
@@ -278,8 +278,12 @@ export default function RoofScene() {
     <div className="sd-three-overlay">
       <Canvas
         shadows
+        // Static scene: render only when the camera moves or props change,
+        // instead of burning a 60fps loop while the user just looks at it.
+        frameloop="demand"
+        dpr={[1, 1.75]}
         camera={{ position: [24, 22, 24], fov: 45 }}
-        gl={{ preserveDrawingBuffer: true, antialias: true }}
+        gl={{ preserveDrawingBuffer: true, antialias: true, powerPreference: "high-performance" }}
         onCreated={({ scene }) => {
           scene.background = new THREE.Color("#101722");
           scene.fog = new THREE.Fog("#101722", 120, 260);

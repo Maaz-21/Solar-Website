@@ -4,10 +4,10 @@
  * SunlightFlow — ambient light effect on every public page.
  *
  * A soft golden light source sits in the top-right corner. Broad, slowly
- * sweeping rays fall across the page toward the bottom-left, and tiny
- * glowing energy particles drift along those rays. Particles near the
- * cursor gently bend toward it, then rejoin their flow — sunlight moving
- * across the interface.
+ * sweeping rays fall across the page toward the bottom and bottom-left,
+ * and tiny glowing dust motes wander down along those rays. The cursor
+ * acts like a puff of air: it briefly deflects nearby particles (and can
+ * knock one onto a neighbouring ray) before the flow carries them on.
  *
  * Subtlety contract: pointer-events none, low alphas tuned for the site's
  * light backgrounds, DPR capped, paused on hidden tabs, and fully disabled
@@ -20,10 +20,11 @@ const GOLD = { r: 246, g: 196, b: 69 };
 const GREEN = { r: 53, g: 217, b: 154 };
 
 const RAY_COUNT = 5;
-const CURSOR_DIST = 150;
-const CURSOR_PULL = 0.055; // gentle attraction, not a vortex
-const FLOW_STEER = 0.035; // how quickly particles rejoin their ray
-const MAX_SPEED = 1.5;
+const CURSOR_DIST = 130;
+const CURSOR_PUSH = 0.09; // gentle deflection away from the cursor — a hindrance, not a magnet
+const RAY_HOP_CHANCE = 0.03; // per-frame chance a strongly disturbed particle changes ray
+const FLOW_STEER = 0.03; // how quickly particles rejoin their ray
+const MAX_SPEED = 1.6;
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -44,11 +45,11 @@ function useMotionAllowed() {
 
 function makeRays() {
   // Angles point from the top-right source into the page (canvas coords:
-  // +x right, +y down), fanned between "left" and "down-left".
+  // +x right, +y down), fanned between "down" and "down-left/left".
   return Array.from({ length: RAY_COUNT }, (_, i) => {
     const t = i / (RAY_COUNT - 1);
     return {
-      baseAngle: 2.32 + t * 0.62, // ~133° … ~168°
+      baseAngle: 1.88 + t * 1.0, // ~108° … ~165°
       swayAmp: 0.025 + Math.random() * 0.03,
       swaySpeed: 0.00008 + Math.random() * 0.00012,
       phase: Math.random() * Math.PI * 2,
@@ -57,6 +58,23 @@ function makeRays() {
       angle: 0, // current angle, updated per frame
     };
   });
+}
+
+/**
+ * Pre-rendered sprite for one particle color: a solid disc, no glow.
+ * Rendered at high resolution so the downscaled edge stays smoothly
+ * anti-aliased. drawImage keeps the frame loop cheap (no per-frame paths).
+ */
+function makeParticleSprite({ r, g, b }) {
+  const size = 64;
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g2d = c.getContext("2d");
+  g2d.fillStyle = `rgb(${r},${g},${b})`;
+  g2d.beginPath();
+  g2d.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2);
+  g2d.fill();
+  return c;
 }
 
 function spawnParticle(source, rays, rayLength, alongMax = 0.35) {
@@ -77,6 +95,11 @@ function spawnParticle(source, rays, rayLength, alongMax = 0.35) {
     color,
     twinkle: Math.random() * Math.PI * 2,
     twinkleSpeed: 0.008 + Math.random() * 0.014,
+    // Dust wander: each mote drifts side-to-side across its beam and
+    // surges/slows a little instead of tracking the ray in a straight line.
+    wanderPhase: Math.random() * Math.PI * 2,
+    wanderSpeed: 0.008 + Math.random() * 0.02,
+    wanderAmp: 0.25 + Math.random() * 0.45,
   };
 }
 
@@ -101,6 +124,7 @@ export default function ParticleField() {
     let particles = [];
     const pointer = { x: -9999, y: -9999, active: false };
     const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    const sprites = { gold: makeParticleSprite(GOLD), green: makeParticleSprite(GREEN) };
 
     const layout = () => {
       width = window.innerWidth;
@@ -191,20 +215,32 @@ export default function ParticleField() {
         const p = particles[i];
         p.twinkle += p.twinkleSpeed;
 
-        // Steer back toward the current direction of the particle's ray…
+        // Steer toward the ray direction plus a wandering sideways drift —
+        // dust floating in a sunbeam, not a bead on a wire.
         const angle = rays[p.ray].angle || rays[p.ray].baseAngle;
-        p.vx += (Math.cos(angle) * p.speed - p.vx) * FLOW_STEER;
-        p.vy += (Math.sin(angle) * p.speed - p.vy) * FLOW_STEER;
+        const dirX = Math.cos(angle);
+        const dirY = Math.sin(angle);
+        p.wanderPhase += p.wanderSpeed;
+        const sway = Math.sin(p.wanderPhase) * p.wanderAmp;
+        const surge = 1 + Math.sin(p.wanderPhase * 0.7 + p.twinkle) * 0.25;
+        p.vx += ((dirX - dirY * sway) * p.speed * surge - p.vx) * FLOW_STEER;
+        p.vy += ((dirY + dirX * sway) * p.speed * surge - p.vy) * FLOW_STEER;
 
-        // …but bend toward the cursor when it's near.
+        // The cursor is a puff of air: nearby motes get nudged away with a
+        // slight swirl, and a strongly disturbed one may hop to a
+        // neighbouring ray — then the flow simply carries it on.
         if (pointer.active) {
-          const dx = pointer.x - p.x;
-          const dy = pointer.y - p.y;
+          const dx = p.x - pointer.x;
+          const dy = p.y - pointer.y;
           const dist = Math.hypot(dx, dy);
-          if (dist < CURSOR_DIST && dist > 1) {
-            const pull = ((CURSOR_DIST - dist) / CURSOR_DIST) * CURSOR_PULL;
-            p.vx += (dx / dist) * pull;
-            p.vy += (dy / dist) * pull;
+          if (dist < CURSOR_DIST && dist > 0.5) {
+            const f = (1 - dist / CURSOR_DIST) * CURSOR_PUSH;
+            p.vx += (dx / dist) * f - (dy / dist) * f * 0.6;
+            p.vy += (dy / dist) * f + (dx / dist) * f * 0.6;
+            if (dist < CURSOR_DIST * 0.6 && Math.random() < RAY_HOP_CHANCE) {
+              const hop = Math.random() < 0.5 ? -1 : 1;
+              p.ray = Math.min(rays.length - 1, Math.max(0, p.ray + hop));
+            }
           }
         }
 
@@ -223,16 +259,13 @@ export default function ParticleField() {
           continue;
         }
 
-        const alpha = 0.28 + Math.sin(p.twinkle) * 0.18;
-        const { r, g, b } = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
-        ctx.shadowColor = `rgba(${r},${g},${b},0.75)`;
-        ctx.shadowBlur = 5;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        const alpha = 0.45 + Math.sin(p.twinkle) * 0.28;
+        const sprite = p.color === GOLD ? sprites.gold : sprites.green;
+        const d = p.radius * 2.4; // solid dot, no halo
+        ctx.globalAlpha = alpha;
+        ctx.drawImage(sprite, p.x - d / 2, p.y - d / 2, d, d);
       }
+      ctx.globalAlpha = 1;
 
       raf = requestAnimationFrame(step);
     };
@@ -243,7 +276,16 @@ export default function ParticleField() {
       else if (raf) cancelAnimationFrame(raf);
     };
 
-    window.addEventListener("resize", layout);
+    // Debounced: layout() rebuilds the whole particle field, far too heavy
+    // to run on every resize event (mobile browsers fire them during scroll
+    // when the URL bar collapses).
+    let resizeTimer = null;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(layout, 150);
+    };
+
+    window.addEventListener("resize", onResize);
     window.addEventListener("mousemove", onPointerMove, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     document.documentElement.addEventListener("mouseleave", onPointerLeave);
@@ -254,7 +296,8 @@ export default function ParticleField() {
     return () => {
       running = false;
       if (raf) cancelAnimationFrame(raf);
-      window.removeEventListener("resize", layout);
+      clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onPointerMove);
       window.removeEventListener("touchmove", onTouchMove);
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);

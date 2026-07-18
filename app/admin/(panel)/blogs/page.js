@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Pencil, Trash2, X, Loader2, AlertCircle, FileText, User, Calendar } from "lucide-react";
+import { toast } from "@/components/Toaster";
 
 export default function BlogsPage() {
   const [blogs, setBlogs] = useState([]);
@@ -79,7 +80,7 @@ export default function BlogsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (imageUploading) {
-      alert("Please wait for the image upload to finish.");
+      toast.info("Please wait for the image upload to finish.");
       return;
     }
 
@@ -105,26 +106,29 @@ export default function BlogsPage() {
       await fetchBlogs();
       closeModal();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return;
-    
-    try {
-      const res = await fetch(`/api/admin/blog/${id}`, {
-        method: "DELETE",
-      });
+  const handleDelete = (id) => {
+    toast.confirm("Are you sure you want to delete this blog post?", {
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/admin/blog/${id}`, {
+            method: "DELETE",
+          });
 
-      if (!res.ok) throw new Error("Failed to delete blog post");
-      
-      setBlogs(blogs.filter(b => b._id !== id));
-    } catch (err) {
-      alert(err.message);
-    }
+          if (!res.ok) throw new Error("Failed to delete blog post");
+
+          setBlogs((prev) => prev.filter((b) => b._id !== id));
+        } catch (err) {
+          toast.error(err.message);
+        }
+      },
+    });
   };
 
   const openModal = (blog = null) => {
