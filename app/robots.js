@@ -1,4 +1,4 @@
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://solar-website-plum.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://evenergy.co.in/" || "https://solar-website-plum.vercel.app";
 
 export default function robots() {
   return {

@@ -1,8 +1,9 @@
 import "./globals.css";
 import Script from "next/script";
 import Toaster from "@/components/Toaster";
+import { BUSINESS, sameAs } from "@/lib/business";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://solar-website-plum.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://evenergy.co.in/" || "https://solar-website-plum.vercel.app";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -35,28 +36,40 @@ export const metadata = {
   robots: { index: true, follow: true },
 };
 
+// SolarEnergyContractor is a schema.org subtype of LocalBusiness, so it
+// inherits every LocalBusiness property while telling Google the specific
+// trade. aggregateRating is intentionally omitted — Google's guidelines
+// disallow self-reported ratings not backed by reviews shown on this page.
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: "SolarOwl Energy Solutions Pvt. Ltd.",
+  "@type": "SolarEnergyContractor",
+  "@id": `${SITE_URL}/#organization`,
+  name: BUSINESS.name,
+  legalName: BUSINESS.legalName,
   url: SITE_URL,
-  logo: `${SITE_URL}/logo.png`,
-  image: `${SITE_URL}/installation-2.webp`,
-  description:
-    "End-to-end rooftop solar installation for homes and businesses across India with government subsidy support.",
-  telephone: "+91 94229 80148",
-  email: "solarowlcare@gmail.com",
+  logo: BUSINESS.logo,
+  image: BUSINESS.image,
+  description: BUSINESS.description,
+  telephone: BUSINESS.phone,
+  email: BUSINESS.email,
+  priceRange: BUSINESS.priceRange,
+  currenciesAccepted: "INR",
   address: {
     "@type": "PostalAddress",
-    streetAddress:
-      "Kalsekar Incubation Center, AIKTC Campus, Plot 2 & 3, Sector 16, Khandagaon, New Panvel",
-    addressLocality: "Panvel",
-    addressRegion: "Maharashtra",
-    postalCode: "410206",
-    addressCountry: "IN",
+    streetAddress: BUSINESS.address.street,
+    addressLocality: BUSINESS.address.locality,
+    addressRegion: BUSINESS.address.region,
+    postalCode: BUSINESS.address.postalCode,
+    addressCountry: BUSINESS.address.country,
   },
-  areaServed: "India",
-  priceRange: "₹₹",
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: BUSINESS.geo.lat,
+    longitude: BUSINESS.geo.lng,
+  },
+  hasMap: `https://www.google.com/maps/search/?api=1&query=${BUSINESS.geo.lat},${BUSINESS.geo.lng}`,
+  areaServed: BUSINESS.areasServed.map((name) => ({ "@type": "Place", name })),
+  sameAs,
 };
 
 export default function RootLayout({ children }) {

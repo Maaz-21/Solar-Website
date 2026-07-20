@@ -2,10 +2,11 @@
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import TrustBadges from "@/components/TrustBadges";
 import { motion } from "framer-motion";
-import { Phone, Mail, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
+import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, MessageCircle, Navigation } from "lucide-react";
 import { useState } from "react";
-import BillRange from "@/components/Contact";
+import { BUSINESS, DIRECTIONS_URL } from "@/lib/business";
 import { toast } from "@/components/Toaster";
 
 export default function ContactPage() {
@@ -92,13 +93,31 @@ function ContactContent() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="section-heading">Contact Information</h2>
+
+            {/* Quick actions — one-tap call / chat for mobile visitors */}
+            <div className="flex flex-wrap gap-3 mb-10">
+              <a
+                href={`tel:${BUSINESS.phone}`}
+                className="btn-primary inline-flex items-center gap-2 shadow-lg shadow-green-900/10"
+              >
+                <Phone className="w-4 h-4" /> Call Now
+              </a>
+              <a
+                href={`https://wa.me/${BUSINESS.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md border border-green-200 bg-white px-6 py-3 font-medium text-primary transition hover:bg-green-50"
+              >
+                <MessageCircle className="w-4 h-4" /> WhatsApp
+              </a>
+            </div>
             
             <div className="space-y-8 mb-12">
               <ContactInfoItem 
                 icon={Phone} 
                 title="Phone & WhatsApp" 
                 content="+91 9422980148/ 7020660967" 
-                subContent="Mon-Sat, 9am - 7pm"
+                subContent="Tap to call — we answer fast"
                 href="tel:+919422980148"
               />
               <ContactInfoItem 
@@ -116,6 +135,12 @@ function ContactContent() {
               />
             </div>
 
+            {/* Service areas — reinforces local relevance for search */}
+            <p className="text-sm text-gray-600 mt-6 mb-2">
+              <span className="font-semibold text-gray-800">Areas we serve:</span>{" "}
+              Panvel, Navi Mumbai, Mumbai &amp; across Maharashtra.
+            </p>
+
             {/* Map */}
             <div className="w-full rounded-2xl h-80 overflow-hidden shadow-xl border border-gray-100">
               <iframe
@@ -127,8 +152,23 @@ function ContactContent() {
                 allowFullScreen=""
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="SolarOwl Location"
+                title="SolarOwl office location on Google Maps"
               />
+            </div>
+
+            {/* Directions — a strong local-intent UX + SEO signal */}
+            <a
+              href={DIRECTIONS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-flex items-center gap-2 rounded-md border border-green-200 bg-white px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-green-50"
+            >
+              <Navigation className="w-4 h-4" /> Get Directions
+            </a>
+
+            {/* Reputation & verification badges */}
+            <div className="mt-10">
+              <TrustBadges variant="full" heading />
             </div>
           </motion.div>
 

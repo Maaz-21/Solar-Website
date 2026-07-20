@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Sparkles } from "lucide-react";
+import TrustBadges from "@/components/TrustBadges";
 export default function Footer() {
   return (
     <footer className="bg-[#0F172A] text-gray-300 pt-16 pb-8 border-t border-gray-800">
@@ -83,6 +84,15 @@ export default function Footer() {
           </ul>
         </div>
 
+      </div>
+
+      {/* Reputation & verification — links out to Google Business Profile
+          and Justdial (see components/TrustBadges.jsx). */}
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 mb-8 flex flex-col sm:flex-row sm:items-center gap-3 border-t border-gray-800 pt-8">
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Rated &amp; Verified
+        </span>
+        <TrustBadges variant="compact" />
       </div>
 
       {/* gray-400, not gray-500 — 500 fails WCAG AA contrast on this navy. */}
